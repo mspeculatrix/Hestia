@@ -4,6 +4,9 @@ flash
 *.elf
 *.hex
 *.map
+_*
+
+
 # Kicad # Set this to ignore when sharing publicly
 
 # ---> C++
