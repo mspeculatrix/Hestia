@@ -5,6 +5,7 @@ flash
 *.hex
 *.map
 _*
+fp-info-cache
 
 
 # Kicad # Set this to ignore when sharing publicly

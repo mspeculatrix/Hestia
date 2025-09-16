@@ -20,12 +20,12 @@ import RPi.GPIO as GPIO
 #    8, 10      (BCM 14, 15)    - serial
 #    19, 21, 23 (BCM 9, 10, 11) - SPI
 #    27, 28     (BCM 0, 1)      - I2C
-SB_DAT = [5]  # header pins [29]
+SB_DAT: list[int] = [5]  # header pins [29]
 SB_CLK: int = 17  # header pin 11
 SB_INT: int = 27  # header pin 13
 SB_ACT: int = 22  # header pin 15
 
-current_client = 0  # This will be the actual BCM pin number
+current_client: int = 0  # This will be the actual BCM pin number
 
 
 def interrupt_handler(channel):
@@ -36,14 +36,24 @@ def interrupt_handler(channel):
 			current_client = dat
 
 
-def disable_interrupt() -> None:
-	GPIO.remove_event_detect(SB_INT)
+# def disable_interrupt(pin: int) -> None:
+# 	GPIO.remove_event_detect(pin)
 
 
-def enable_interrupt() -> None:
-	GPIO.add_event_detect(
-		SB_INT, GPIO.FALLING, callback=interrupt_handler, bouncetime=10
-	)
+def disable_interrupts() -> None:
+	for pin in SB_DAT:
+		GPIO.remove_event_detect(pin)
+
+
+# def enable_interrupt(pin: int) -> None:
+# 	GPIO.add_event_detect(pin, GPIO.FALLING, callback=interrupt_handler, bouncetime=10)
+
+
+def enable_interrupts() -> None:
+	for pin in SB_DAT:
+		GPIO.add_event_detect(
+			pin, GPIO.FALLING, callback=interrupt_handler, bouncetime=10
+		)
 
 
 def receive_message(dat: int) -> list[int]:
@@ -83,7 +93,7 @@ def wait_for_signal_state(signal: int, awaitedState: int) -> None:
 def set_receive_mode(dat: int) -> None:
 	print('- receive mode')
 	# Assuming all lines are in their default state as INPUTs
-	disable_interrupt()  # Disable interrupts
+	disable_interrupts()  # Disable interrupts
 	GPIO.output(SB_ACT, GPIO.LOW)
 	# Wait for SB_DAT to go HIGH
 	while GPIO.input(dat) == 0:
@@ -99,7 +109,7 @@ def set_SB_default_state() -> None:
 	GPIO.setup([SB_CLK, SB_INT], GPIO.IN)
 	GPIO.output(SB_ACT, GPIO.HIGH)
 	current_client = 0
-	enable_interrupt()
+	enable_interrupts()
 
 
 def main() -> NoReturn:
