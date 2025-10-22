@@ -6,6 +6,12 @@ This should not be a UART-based thing because we don't want UART buffers on a de
 
 The communication doesn't need to be async because we'll only be pushing data in one direction at a time.
 
+This version uses three signals:
+
+- SB_CLK - shared by all modules
+- SB_ACT - shared by all modules
+- SB_DAT - unique line from module to controller
+
 ## MESSAGE FORMAT
 
 Messages will consist of:
@@ -17,20 +23,17 @@ Messages will consist of:
 
 ## SIGNALS
 
-Default states:
+Default states (pullups on all lines):
 
-| SIGNAL  | CONTROLLER | MODULE       |
-|---------|------------|--------------|
-| SB_CLK  | INPUT      | INPUT        |
-| SB_DAT  | INPUT, int | INPUT, int   |
+| SIGNAL  | CONTROLLER | MODULE       |           |
+|---------|------------|--------------|-----------|
+| SB_ACT  | INPUT, int | INPUT        | Shared    |
+| SB_CLK  | INPUT      | INPUT        | Shared    |
+| SB_DAT  | INPUT      | INPUT, int   | Dedicated |
 
-Both lines have pullups.
+All lines have pullups.
 
-SB_CLK is shared by all clients.
-
-SB_DAT is a dedicated line from each module to controller.
-
-**NB:** The shared lines are set to inputs by default so that we don't have multiple devices driving the lines high. The `/SB_INT`  and `/SB_ACT` lines will each need one global pullup.
+**NB:** The shared lines are set to inputs by default so that we don't have multiple devices driving the lines high.
 
 ## MESSAGE: CONTROLLER → MODULE
 
@@ -51,20 +54,23 @@ SB_DAT is a dedicated line from each module to controller.
 | Set `SB_CLK` to INPUT          | |
 | Enable `SB_DAT` interrupts     | |
 
-## MESSAGE: CLIENT → HUB
+## MESSAGE: MODULE → CONTROLLER
 
 |    | CONTROLLER                      | MODULE |
 |---:|---------------------------------|-|
-|  1 |                                 | Check if `SB_CLK` LOW. If so, wait |
-|  2 |                                 | Disable `SB_DAT` interrupts        |
-|  3 |                                 | Set `SB_DAT` to OUTPUT, HIGH       |
-|  4 |                                 | Pulse `SB_DAT` LOW                 |
-|  5 | If not busy:                    | Set `SB_DAT` to INPUT              |
-|  6 | Disable all `SB_DAT` interrupts | |
-|  7 | Identify device, if found:      | Wait for `SB_DAT` to pulse LOW     |
-|  8 | Set `SB_DAT` OUTPUT, HIGH       | |
-|  9 | Pulse `SB_DAT` LOW              | |
-| 10 | Set `SB_DAT` to INPUT           | Set `SB_DAT` OUTPUT, HIGH          |
+|  1 |                                 | Disable `SB_DAT` interrupts        |
+|  2 |                                 | Check if `SB_ACT` LOW. If so, wait |
+|  4 |                                 | Set `SB_DAT` to OUTPUT, LOW        |
+|    |                                 | Set `SB_ACT` to OUTPUT |
+|  4 |                                 | Strobe `SB_ACT` LOW                 |
+|    |                                 | Set `SB_ACT` to INPUT |
+|  5 | If not busy:                    | |
+|  6 | Disable `SB_ACT` interrupt      | |
+|    | Set `SB_ACT` to OUTPUT, LOW     | |
+|  7 | Identify device, if found:      | Wait for `SB_CLK` to pulse LOW     |
+|  8 | Set `SB_CLK` OUTPUT, HIGH       | |
+|  9 | Pulse `SB_CLK` LOW              | |
+| 10 | Set `SB_CLK` to INPUT           | Set `SB_DAT` HIGH          |
 | 11 |                                 | Set `SB_CLK` OUTPUT, HIGH          |
 | 12 | <-- message exchange -->        | <-- message exchange -->           |
 | 13 | <-- reset to default -->        | <-- reset to default -->           |

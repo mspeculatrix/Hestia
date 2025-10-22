@@ -11,7 +11,6 @@
 # - https://sourceforge.net/p/raspberry-gpio-python/wiki/BasicUsage/
 #
 
-from typing import NoReturn
 
 import RPi.GPIO as GPIO
 
@@ -20,33 +19,26 @@ import RPi.GPIO as GPIO
 #    8, 10      (BCM 14, 15)    - serial
 #    19, 21, 23 (BCM 9, 10, 11) - SPI
 #    27, 28     (BCM 0, 1)      - I2C
-SB_DAT: list[int] = [5]  # header pins [29]
-SB_CLK: int = 17  # header pin 11
-SB_INT: int = 27  # header pin 13
-SB_ACT: int = 22  # header pin 15
+SB_DAT: list[int] = [19]  # header pins [35]
+SB_CLK: int = 26  # header pin 37
+# SB_INT: int = 27  # header pin 13
+# SB_ACT: int = 22  # header pin 15
 
 current_client: int = 0  # This will be the actual BCM pin number
 
 
-def interrupt_handler(channel):
+def interrupt_handler(channel) -> None:
 	print('Interrupt!')
 	global current_client
 	for dat in SB_DAT:
 		if GPIO.input(dat) == GPIO.LOW:
+			print(f'- dat low: {dat}')
 			current_client = dat
-
-
-# def disable_interrupt(pin: int) -> None:
-# 	GPIO.remove_event_detect(pin)
 
 
 def disable_interrupts() -> None:
 	for pin in SB_DAT:
 		GPIO.remove_event_detect(pin)
-
-
-# def enable_interrupt(pin: int) -> None:
-# 	GPIO.add_event_detect(pin, GPIO.FALLING, callback=interrupt_handler, bouncetime=10)
 
 
 def enable_interrupts() -> None:
@@ -91,32 +83,36 @@ def wait_for_signal_state(signal: int, awaitedState: int) -> None:
 
 
 def set_receive_mode(dat: int) -> None:
-	print('- receive mode')
+	print(f'- receive mode - client: {dat}')
 	# Assuming all lines are in their default state as INPUTs
 	disable_interrupts()  # Disable interrupts
-	GPIO.output(SB_ACT, GPIO.LOW)
+	print('- waiting for SB_DAT to go high')
 	# Wait for SB_DAT to go HIGH
 	while GPIO.input(dat) == 0:
 		pass  # obviously need to do a timeout here
+	print('- SB_DAT high')
+	# Acknowledge
+	# GPIO.setup(dat, GPIO.OUT)
+	# GPIO.output(SB_DAT[dat], GPIO.LOW)
+	# time.sleep(10 / 1000000)
+	# GPIO.output(SB_DAT[dat], GPIO.HIGH)
+	# GPIO.setup(dat, GPIO.IN)
 
 
 def set_SB_default_state() -> None:
 	global current_client
 	print('- setting default state')
-	# Set all pins as inputs
-	for dat in SB_DAT:
+	for dat in SB_DAT:  # Set all pins as inputs
 		GPIO.setup(dat, GPIO.IN)
-	GPIO.setup([SB_CLK, SB_INT], GPIO.IN)
-	GPIO.output(SB_ACT, GPIO.HIGH)
+	GPIO.setup(SB_CLK, GPIO.IN)
 	current_client = 0
 	enable_interrupts()
 
 
-def main() -> NoReturn:
+def main() -> None:
 	global current_client
 	GPIO.setmode(GPIO.BCM)  # use board numbering
 	GPIO.setwarnings(True)
-	GPIO.setup(SB_ACT, GPIO.OUT)
 	set_SB_default_state()
 
 	runloop: bool = True
@@ -126,8 +122,8 @@ def main() -> NoReturn:
 		if current_client > 0:
 			# okay folks, we have a live one
 			set_receive_mode(current_client)
-			recvd_msg: list[int] = receive_message(current_client)
-			print(recvd_msg)
+			# recvd_msg: list[int] = receive_message(current_client)
+			# print(recvd_msg)
 			set_SB_default_state()  # also resets current_client
 
 
