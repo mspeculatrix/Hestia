@@ -14,9 +14,9 @@ This version uses three signals:
 
 ## MESSAGE FORMAT
 
-Messages will consist of:
+Messages will consist of bytes:
 
-0. MSG_DATA_LEN - how many bytes of data (not including MSG_TYPE)
+0. MSG_DATA_LEN - how many bytes of data in total
 1. MSG_TYPE - set param, alert, data
 2. Data
 3. ...
@@ -62,18 +62,20 @@ All lines have pullups.
 |  2 |                                 | Check if `SB_ACT` LOW. If so, wait |
 |  4 |                                 | Set `SB_DAT` to OUTPUT, LOW        |
 |    |                                 | Set `SB_ACT` to OUTPUT |
-|  4 |                                 | Strobe `SB_ACT` LOW                 |
-|    |                                 | Set `SB_ACT` to INPUT |
+|  4 |                                 | Set `SB_ACT` LOW                 |
+|| Could be a moment here where another sensor fires ||
+|| Somewhere in the following, we could have the module ||
+|| switch DAT to input & watch for a strobe ||
 |  5 | If not busy:                    | |
 |  6 | Disable `SB_ACT` interrupt      | |
-|    | Set `SB_ACT` to OUTPUT, LOW     | |
+|    |       | |
 |  7 | Identify device, if found:      | Wait for `SB_CLK` to pulse LOW     |
 |  8 | Set `SB_CLK` OUTPUT, HIGH       | |
 |  9 | Pulse `SB_CLK` LOW              | |
 | 10 | Set `SB_CLK` to INPUT           | Set `SB_DAT` HIGH          |
 | 11 |                                 | Set `SB_CLK` OUTPUT, HIGH          |
 | 12 | <-- message exchange -->        | <-- message exchange -->           |
-| 13 | <-- reset to default -->        | <-- reset to default -->           |
+| 13 | <-- reset to default -->        | Set `SB_ACT` HIGH then INPUT       |
 
 Step 1 - the client checking if `SB_CLK` is low - is just a quick and dirty check to ensure the bus isn't in use.
 

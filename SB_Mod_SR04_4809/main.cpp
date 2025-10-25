@@ -81,6 +81,8 @@ int main(void) {
 
 	SB_PORT.SB_DAT_CTRL = PORT_PULLUPEN_bm | PORT_ISC_FALLING_gc;
 
+	timeoutCounterInit();
+
 	enableTimer();
 
 	serial.writeln("Running");
