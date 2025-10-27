@@ -1,6 +1,6 @@
 #include "SB_sr04lib_avr0.h"
 
-void enableTimer() {
+void enableSensorTimer(void) {
 	// Configure TCA0 for normal (count‑up) mode, no PWM
 	// The following just sets the default, but for the sake of completeness...
 	TCA0.SINGLE.CTRLB = TCA_SINGLE_WGMODE_NORMAL_gc;
@@ -19,7 +19,7 @@ uint16_t ping(void) {
 	SENSOR_PORT.OUTSET = TRIGGER;		// set trigger pin high
 	_delay_us(10);						// wait for min. 10us
 	SENSOR_PORT.OUTCLR = TRIGGER;		// take trigger pin low again
-	WAIT_UNTIL_HIGH(SENSOR_PORT, ECHO); // stalls here
+	WAIT_UNTIL_HIGH(SENSOR_PORT, ECHO);
 	TCA0.SINGLE.CNT = 0;      			// reset counter
 	WAIT_UNTIL_LOW(SENSOR_PORT, ECHO);
 	unsigned long elapsed = TCA0.SINGLE.CNT / DIST_FACTOR;

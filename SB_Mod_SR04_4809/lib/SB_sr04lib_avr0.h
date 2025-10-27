@@ -18,12 +18,12 @@
 #include "SBlib_defines.h"
 #include "SBlib_avr0.h"
 
-#define MSG_LEN 4
+#define MSG_BUF_LEN 16
 
 #define MAX_ECHO_TIME 23200
 #define DIST_FACTOR 100
 
-void enableTimer();
+void enableSensorTimer(void);
 uint16_t ping(void);
 
 #endif

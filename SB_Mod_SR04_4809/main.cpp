@@ -1,5 +1,8 @@
 /*
-
+ * SB_Mod_SR04
+ *
+ * ATmega4809-P code for an SR04 ultrasonic rangefinder using a SensorBus
+ * interface.
  */
 
 #ifndef __AVR_ATmega4809__
@@ -21,23 +24,25 @@
 #include "lib/SBlib_avr0.h"
 #include "lib/SB_sr04lib_avr0.h"
 
-#define MODULE_ID 0xAA
 
  /*******************************************************************************
  ***** GLOBALS                                                              *****
  *******************************************************************************/
 
+ // Using serial only for dev & debugging.
 SMD_AVR0_Serial serial = SMD_AVR0_Serial(SERIAL_BAUDRATE);
+
 bool commRequest = false;
-uint8_t sbMsgBuf[MSG_LEN];	// Buffer for SB messages
-volatile uint8_t* datCtrl = &PORTD.PIN0CTRL;
+uint8_t sbMsgOutBuf[MSG_BUF_LEN];	// Buffer for outgoing SB messages
+uint8_t sbMsgInBuf[MSG_BUF_LEN];	// Buffer for incoming SB messages
 
-// SensorBusModule sbMod = SensorBusModule(&SB_PORT, SB_DAT, SB_CLK, datCtrl);
+SensorBusModule sbMod = SensorBusModule(&PORTD, PIN0_bm, PIN1_bm, PIN2_bm, &PORTD.PIN0CTRL, MSG_BUF_LEN);
 
-// Interrupt service routine - invoked when /DAT is pulled low
-ISR(SB_PORT_INT_VEC) {
-	if (SB_PORT.INTFLAGS & SB_DAT) {		// Check if SB_DAT triggered
-		SB_PORT.INTFLAGS = SB_DAT;		// Clear interrupt flag
+// Interrupt service routine - required by SensorBusModule class.
+// Invoked when /DAT is pulled low.
+ISR(PORTD_PORT_vect) {
+	if (PORTD.INTFLAGS & PIN0_bm) {		// Check if /DAT triggered
+		PORTD.INTFLAGS = PIN0_bm;		// Clear interrupt flag
 		commRequest = true;				// Set event flag
 	}
 }
@@ -64,26 +69,18 @@ int main(void) {
 	PORTC.PIN6CTRL = PORT_PULLUPEN_bm;
 	PORTC.PIN7CTRL = PORT_PULLUPEN_bm;
 
-	SB_PORT.DIRCLR = SB_CLK | SB_DAT; // set as inputs to start with
 	SENSOR_PORT.OUTCLR = TRIGGER; 	// Default to low
 	SENSOR_PORT.DIRSET = TRIGGER;	// Output
 	SENSOR_PORT.DIRCLR = ECHO;		// Input
 
 	serial.begin();
+	sbMod.init();
 
-	// Set up non-changing parts of message
-	sbMsgBuf[0] = MSG_LEN;		// Message length
-	sbMsgBuf[1] = SENSOR_DATA_US;
+	// Set up non-changing parts of outgoing message
+	sbMsgOutBuf[0] = MSG_BUF_LEN;		// Max message length
+	sbMsgOutBuf[1] = SENSOR_DATA_US;
 
-	char serialMsgBuf[MSG_BUF_LEN]; // For sending messages via serial
-	uint8_t msgIdx = 0;
-	bool msgRecvd = false;			// Do we have one yet?
-
-	SB_PORT.SB_DAT_CTRL = PORT_PULLUPEN_bm | PORT_ISC_FALLING_gc;
-
-	timeoutCounterInit();
-
-	enableTimer();
+	enableSensorTimer();
 
 	serial.writeln("Running");
 
@@ -92,18 +89,25 @@ int main(void) {
 	***************************************************************************/
 
 	while (1) {
-		// uint16_t dist = ping();
-		uint16_t dist = 0xAA55;
 
-		sbMsgBuf[2] = (uint8_t)(dist & 0x00FF); // low byte
-		sbMsgBuf[3] = (uint8_t)(dist >> 8); 	// high byte
-		sbSendMessage(sbMsgBuf, MSG_LEN);
-		// SB_PORT.OUTSET = SB_DAT;						// Set to high
-		// SB_PORT.DIRSET = SB_DAT;						// Set DAT to output
-		// SB_PORT.OUTCLR = SB_DAT;						// Pulse DAT low
-		// _delay_ms(SB_PULSE_LENGTH);
-		// SB_PORT.OUTSET = SB_DAT;						// Set to high
-		// SB_PORT.DIRCLR = SB_DAT;						// Set DAT to input
+		// if (commRequest) {
+		// 	commRequest = false;
+		// 	sbMod.setReceiveMode(); // go into receive mode
+		// 	sbMod.strobeClk();
+
+		// 	// uint8_t msgLen = 0;
+		// 	// read a byte & set msgLen
+		// 	// loop for remaining bytes
+		// 	// decide what to do with message
+		// }
+
+		// uint16_t dist = 0xAA55;
+		uint16_t dist = ping();
+		serial.writeln((int)dist);
+		sbMsgOutBuf[0] = 4;
+		sbMsgOutBuf[2] = (uint8_t)(dist & 0x00FF);	// low byte
+		sbMsgOutBuf[3] = (uint8_t)(dist >> 8);		// high byte
+		sbMod.sendMessage(sbMsgOutBuf);
 
 		_delay_ms(1000);
 	}

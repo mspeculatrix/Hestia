@@ -1,106 +1,118 @@
 #include "SBlib_avr0.h"
 
-/***** CLASS METHODS *****/
-// SensorBusModule::SensorBusModule(volatile PORT_t* port,
-// 	uint8_t datPin_pm, uint8_t clkPin_pm,
-// 	volatile uint8_t* datCtrl)
-// 	: _port(port), _datPin(datPin_pm), _clkPin(clkPin_pm), _datCtrl(datCtrl) {
-// 	init();
-// }
-
-// void SensorBusModule::init() {
-// 	// Initial configuration
-// 	_port->DIRCLR = _datPin | _clkPin; // set as inputs to start with
-// 	// base address of PIN0CTRL, then offset to correct pin
-// 	volatile uint8_t* pinCtrlBase = &(_port->PIN0CTRL);
-// 	pinCtrlBase[*_datCtrl] = PORT_PULLUPEN_bm | PORT_ISC_FALLING_gc;
-// }
-
-// // This will be called by methods specific to the instance.
-// void SensorBusModule::sendMessage(uint8_t* msgBuf, uint8_t msgLen) {
-
-// }
-
-void sbSetDefaults() {
-	// SB_PORT.OUTSET = SB_CLK | SB_DAT | SB_ACT; // all lines to high
-	SB_PORT.DIRCLR = SB_CLK | SB_DAT | SB_ACT; // all lines to inputs
-	// Enable interrupts on data line
-	SB_PORT.SB_DAT_CTRL = PORT_PULLUPEN_bm | PORT_ISC_FALLING_gc;
+/*------------------------------------------------------------------------------
+---- PUBLIC METHODS                                                         ----
+------------------------------------------------------------------------------*/
+SensorBusModule::SensorBusModule(volatile PORT_t* port,
+	uint8_t datPin_pm, uint8_t clkPin_pm, uint8_t actPin_pm,
+	volatile uint8_t* datCtrl, uint8_t msgBufLen)
+	: _port(port), _dat(datPin_pm), _clk(clkPin_pm),
+	_act(actPin_pm), _datCtrl(datCtrl), _msgBufLen(msgBufLen) {
+	init();
 }
 
-uint8_t sbReceiveByte() {
-
+void SensorBusModule::init() {
+	// Initial configuration
+	// base address of PIN0CTRL, from which we offset to desired pin
+	_pinCtrlBase = &(_port->PIN0CTRL);
+	_setDefaults();
+	_timeoutCounterInit();
 }
 
-void sbSendMessage(uint8_t* msgBuf, uint8_t msgLen) {
+// This will be called by methods specific to the instance.
+uint8_t SensorBusModule::sendMessage(uint8_t* msgBuf) {
 	// Assumes all signals start as inputs
+	uint8_t error = 0;
+	uint8_t msgLen = msgBuf[0];
 	// Disable interrupts on DAT
-	SB_PORT.SB_DAT_CTRL &= ~PORT_ISC_gm;  			// Clear current ISC bits
-	SB_PORT.SB_DAT_CTRL |= PORT_ISC_INTDISABLE_gc;  // Disable interrupts
+	_pinCtrlBase[*_datCtrl] &= ~PORT_ISC_gm;  			// Clear ISC bits
+	_pinCtrlBase[*_datCtrl] |= PORT_ISC_INTDISABLE_gc;  // Disable interrupts
 
-	bool bus_inactive = waitForState(&SB_PORT, SB_ACT, HIGH, 20000, SB_MAX_TO_LOOP_COUNT);
+	bool bus_inactive = _waitForState(_port, _act, HIGH, 20000, SB_MAX_TO_LOOP_COUNT);
 
 	if (bus_inactive) {
-		SB_PORT.OUTCLR = SB_DAT | SB_ACT;				// Set both low
-		SB_PORT.DIRSET = SB_DAT | SB_ACT;				// Set both to outputs
-		bool clk_strobed = waitForState(&SB_PORT, SB_CLK, LOW, 0xFFFF, 255);
+		_port->OUTCLR = _dat | _act;				// Set both low
+		_port->DIRSET = _dat | _act;				// Set both to outputs
+		bool clk_strobed = _waitForState(_port, _clk, LOW, 0xFFFF, 10);
 		if (clk_strobed) {
-			// serial.writeln("strobe");
-			SB_PORT.OUTSET = SB_DAT;				// Take high
+			_port->OUTSET = _dat;				// Take high
 			_delay_us(SB_START_TRANSMISSION_PAUSE);
-			SB_PORT.OUTSET = SB_CLK;				// Take high
-			SB_PORT.DIRSET = SB_CLK;						// & output
+			_port->OUTSET = _clk;				// Take high
+			_port->DIRSET = _clk;						// & output
 
 			// EXCHANGE LOOP
 			for (uint8_t i = 0; i < msgLen; i++) {
 				for (uint8_t bit = 0; bit < 8; bit++) {
 					if (msgBuf[i] & (1 << bit)) {
-						SB_PORT.OUTSET = SB_DAT;
+						_port->OUTSET = _dat;
 					} else {
-						SB_PORT.OUTCLR = SB_DAT;
+						_port->OUTCLR = _dat;
 					}
 					_delay_us(SB_BIT_PAUSE);
-					SB_PORT.OUTCLR = SB_CLK;
+					_port->OUTCLR = _clk;
 					_delay_us(SB_BIT_PAUSE);
-					SB_PORT.OUTSET = SB_CLK;
+					_port->OUTSET = _clk;
 					// _delay_us(SB_BIT_PAUSE);
 				}
 				_delay_us(SB_BYTE_PAUSE);
 			}
+			_port->DIRCLR = _clk;
 		} else {
-			serial.writeln("* No clk strobe");
+			error = SB_ERR_CLK_STROBE;
 		}
 	} else {
-		serial.writeln("* Timed out waiting for bus to be inactive");
+		error = SB_ERR_TO_BUS;
 	}
-
 	// RESET TO DEFAULTS
-	sbSetDefaults();
+	_setDefaults();
+	return error;
 }
 
-void timeoutCounterInit() {
+void SensorBusModule::setReceiveMode() {
+
+}
+
+void SensorBusModule::strobeClk() {
+	_port->DIRSET = _clk;
+	_port->OUTCLR = _clk;
+	_delay_us(SB_CLK_STROBE_DURATION);
+	_port->OUTSET = _clk;
+	_port->DIRCLR = _clk;
+}
+
+/*------------------------------------------------------------------------------
+---- PROTECTED METHODS                                                      ----
+------------------------------------------------------------------------------*/
+
+void SensorBusModule::_setDefaults() {
+	_port->DIRCLR = _clk | _dat | _act; // all lines to inputs
+	// Enable interrupts on data line
+	_pinCtrlBase[*_datCtrl] = PORT_PULLUPEN_bm | PORT_ISC_FALLING_gc;
+}
+
+void SensorBusModule::_timeoutCounterInit() {
 	TCB0.CTRLA = 0;	// Disable timer before configuration
 	TCB0.CTRLA = TCB_CLKSEL_CLKDIV2_gc;   // Select clock source
 	TCB0.CTRLB = TCB_CNTMODE_INT_gc;      // periodic interrupt mode but interrupts disabled
 	TCB0.INTFLAGS = TCB_CAPT_bm;	// Clear any pending interrupt flag
 }
 
-void timeoutCounterStart(uint16_t timeoutValue) {
+void SensorBusModule::_timeoutCounterStart(uint16_t timeoutValue) {
 	TCB0.CNT = 0;     // Reset count
 	TCB0.CCMP = timeoutValue;			// Load rollover value
 	TCB0.CTRLA |= TCB_ENABLE_bm; 	// Enable the timer
 }
 
-void timeoutCounterStop() {
+void SensorBusModule::_timeoutCounterStop() {
 	TCB0.INTFLAGS = TCB_CAPT_bm;
 	TCB0.CTRLA &= ~TCB_ENABLE_bm;
 }
 
-bool waitForState(volatile PORT_t* port, uint8_t pin, uint8_t state, uint16_t timeoutTicks, uint8_t max_loops) {
+bool SensorBusModule::_waitForState(volatile PORT_t* port, uint8_t pin, uint8_t state, uint16_t timeoutTicks, uint8_t max_loops) {
 	bool stateAchieved = false;
 	bool max_loop_limit = false;
 	uint8_t loop_count = 0;
-	timeoutCounterStart(timeoutTicks);
+	_timeoutCounterStart(timeoutTicks);
 	while (!stateAchieved && !max_loop_limit) {
 		bool timed_out = false;
 		while (!stateAchieved && !timed_out) {
@@ -120,6 +132,6 @@ bool waitForState(volatile PORT_t* port, uint8_t pin, uint8_t state, uint16_t ti
 			}
 		}
 	}
-	timeoutCounterStop();
+	_timeoutCounterStop();
 	return stateAchieved;
 }

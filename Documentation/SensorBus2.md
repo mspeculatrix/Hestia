@@ -1,4 +1,4 @@
-# SENSOR BUS
+# SENSORBUS
 
 Each smart sensor or subsystem will be attached to a common serial bus.
 
