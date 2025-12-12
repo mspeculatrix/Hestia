@@ -33,6 +33,7 @@
       "footprint_text",
       "footprint_anchors",
       "ratsnest",
+      "grid",
       "footprints_front",
       "footprints_back",
       "footprint_values",
@@ -58,7 +59,7 @@
     "ssh_key": ""
   },
   "meta": {
-    "filename": "LP_SB_hub_IF.kicad_prl",
+    "filename": "SB_Hub_IF.kicad_prl",
     "version": 5
   },
   "net_inspector_panel": {

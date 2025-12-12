@@ -4,8 +4,9 @@ flash
 *.elf
 *.hex
 *.map
-_*
+__*
 fp-info-cache
+*.sal
 
 # Kicad # Set this to ignore when sharing publicly
 

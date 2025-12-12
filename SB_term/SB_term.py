@@ -25,9 +25,12 @@ SB_DAT: list[int] = [19]  # header pins [35]
 SB_CLK: int = 26  # header pin 37
 SB_ACT: int = 13  # header pin 33
 
-CLK_STROBE_DIV: int = 100000
+CLK_STROBE_DURATION = 0.0001
+DAT_STROBE_DURATION = 0.00001
+BIT_PAUSE_DURATION = 0.00001
+SEND_PAUSE_DURATION = 0.001
 
-SIG_AWAIT_TO = 50  # milliseconds
+SIG_AWAIT_TO = 50  # timeout in milliseconds
 
 # ERROR CODES
 ERR_SIGNAL_AWAIT_TO: int = 10
@@ -51,7 +54,6 @@ def disable_interrupts() -> None:
 
 def enable_interrupts() -> None:
 	GPIO.add_event_detect(
-		# SB_ACT, GPIO.FALLING, callback=interrupt_handler, bouncetime=10
 		SB_ACT,
 		GPIO.FALLING,
 		callback=interrupt_handler,
@@ -92,7 +94,7 @@ def receive_message(dat: int) -> tuple[list[int], int | None]:
 	# Acknowledge with CLK strobe
 	GPIO.setup(SB_CLK, GPIO.OUT)
 	GPIO.output(SB_CLK, GPIO.LOW)
-	time.sleep(1 / CLK_STROBE_DIV)
+	time.sleep(CLK_STROBE_DURATION)
 	GPIO.output(SB_CLK, GPIO.HIGH)
 	GPIO.setup(SB_CLK, GPIO.IN)
 	err = wait_for_signal_state(SB_CLK, GPIO.HIGH)
@@ -117,6 +119,34 @@ def receive_message(dat: int) -> tuple[list[int], int | None]:
 						break
 	enable_interrupts()
 	return (recvdMessage, error)
+
+
+def send_message(sensor: int, bytes: list[int]) -> int:
+	disable_interrupts()
+	GPIO.setup(SB_ACT, GPIO.OUT)
+	GPIO.setup(sensor, GPIO.OUT)
+	GPIO.output(SB_ACT, GPIO.LOW)
+	GPIO.output(sensor, GPIO.LOW)  # strobe DAT line
+	time.sleep(DAT_STROBE_DURATION)
+	GPIO.output(sensor, GPIO.HIGH)
+	err: int = wait_for_signal_state(SB_CLK, GPIO.LOW)  # wait for CLK strobe
+	if err == 0:
+		GPIO.setup(SB_CLK, GPIO.OUT)
+		GPIO.output(SB_CLK, GPIO.HIGH)
+		# Need a short pause here
+		time.sleep(SEND_PAUSE_DURATION)
+		for byte in bytes:
+			for i in range(0, 8):
+				if byte & (1 << i):
+					GPIO.output(sensor, GPIO.HIGH)
+				else:
+					GPIO.output(sensor, GPIO.LOW)
+				time.sleep(BIT_PAUSE_DURATION)  #  bit pause
+				GPIO.output(SB_CLK, GPIO.LOW)
+				time.sleep(BIT_PAUSE_DURATION)  #  bit pause
+				GPIO.output(SB_CLK, GPIO.HIGH)
+	set_SB_default_state()
+	return err
 
 
 def set_SB_default_state() -> None:
@@ -153,7 +183,8 @@ def main() -> None:
 	set_SB_default_state()
 
 	runloop: bool = True
-	print('= Running')
+	print('SB_term running')
+	counter: int = 0
 	# =====  MAIN LOOP  ========================================================
 	while runloop:
 		if current_client > 0:
@@ -165,6 +196,13 @@ def main() -> None:
 				print(f'***ERROR: {error}')
 			# set_SB_default_state()  # also resets current_client
 			set_SB_default_state()
+
+		counter += 1
+		if counter == 6500000:
+			print('sending')
+			counter = 0
+			msg: list[int] = [4, 50, 170, 255]
+			send_message(SB_DAT[0], msg)
 
 
 if __name__ == '__main__':

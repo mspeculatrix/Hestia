@@ -52,16 +52,7 @@
         }
       },
       "diff_pair_dimensions": [],
-      "drc_exclusions": [
-        [
-          "silk_edge_clearance|100203000|104093000|8f107687-f3c3-4d6a-9f06-def7d36d9d2d|16e5d3cb-fc32-451c-9cdd-7aebbdf2ced7",
-          ""
-        ],
-        [
-          "silk_edge_clearance|100203000|76788000|8f107687-f3c3-4d6a-9f06-def7d36d9d2d|0a4d6559-1c0a-4e37-b6f9-e368adafbdf6",
-          ""
-        ]
-      ],
+      "drc_exclusions": [],
       "meta": {
         "version": 2
       },
@@ -103,7 +94,7 @@
         "padstack": "warning",
         "pth_inside_courtyard": "ignore",
         "shorting_items": "error",
-        "silk_edge_clearance": "warning",
+        "silk_edge_clearance": "ignore",
         "silk_over_copper": "ignore",
         "silk_overlap": "warning",
         "skew_out_of_range": "error",
@@ -527,7 +518,7 @@
       "gencad": "",
       "idf": "",
       "netlist": "",
-      "plot": "",
+      "plot": "Gerbers",
       "pos_files": "",
       "specctra_dsn": "",
       "step": "",
