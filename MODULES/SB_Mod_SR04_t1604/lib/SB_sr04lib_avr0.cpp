@@ -16,6 +16,7 @@ void enableSensorTimer(void) {
 
 uint16_t ping(void) {
 	uint16_t distance = 0;
+	LED_PORT.OUTSET = ACT_LED;
 	SENSOR_PORT.OUTSET = TRIGGER;		// set trigger pin high
 	_delay_us(10);						// wait for min. 10us
 	SENSOR_PORT.OUTCLR = TRIGGER;		// take trigger pin low again
@@ -28,5 +29,6 @@ uint16_t ping(void) {
 	// //if (elapsed <= MAX_ECHO_TIME) {
 	// distance = (uint16_t)(elapsed / DIST_FACTOR);
 	// //}
+	LED_PORT.OUTCLR = ACT_LED;
 	return distance;
 }

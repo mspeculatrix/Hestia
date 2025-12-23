@@ -20,7 +20,7 @@ CPPSOURCES += $(wildcard lib/*.h)
 
 # PROGRAMMER_TYPE = serialupdi
 # PROGRAMMER_ARGS = -P /dev/ttyUSB0 -b 115200
-PROGRAMMER_TYPE = serialupdi
+PROGRAMMER_TYPE = atmelice_updi
 PROGRAMMER_ARGS = -P usb -B 125kHz
 
 CXX = avr-g++
