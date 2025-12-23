@@ -6,8 +6,8 @@
 .vscode
 .DS_Store
 fp-info-cache
-_*.cfg
-_old*
+__*
+_target.cfg
 *.numbers
 
 *.graffle
