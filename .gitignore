@@ -1,45 +1,14 @@
-.DS_Store
-flash
-.vscode
-*.elf
 *.hex
-*.map
-__*
-fp-info-cache
-*.sal
-
-# Kicad # Set this to ignore when sharing publicly
-
-# ---> C++
-# Prerequisites
-*.d
-
-# Compiled Object files
-*.slo
-*.lo
+*.elf
 *.o
-*.obj
+*.map
 
-# Precompiled Headers
-*.gch
-*.pch
+.vscode
+.DS_Store
+fp-info-cache
+__*
+_target.cfg
+*.numbers
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
+*.graffle
+Kicad
