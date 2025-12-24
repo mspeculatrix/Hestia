@@ -4,6 +4,8 @@
 #include <avr/io.h>
 
 #define SERIAL_BAUDRATE 19200
+#define TX_PIN PIN2_bm
+#define RX_PIN PIN3_bm
 #define MSG_BUF_LEN 16
 
 #define NEWLINE 10

@@ -25,7 +25,7 @@ Messages will consist of bytes:
 
 Default states (pullups on all lines):
 
-| SIGNAL  | CONTROLLER | MODULE       |           |
+| SIGNAL  | NODE       | MODULE       |           |
 |---------|------------|--------------|-----------|
 | SB_ACT  | INPUT, int | INPUT        | Shared    |
 | SB_CLK  | INPUT      | INPUT        | Shared    |
@@ -35,9 +35,9 @@ All lines have pullups.
 
 **NB:** The shared lines are set to inputs by default so that we don't have multiple devices driving the lines high.
 
-## MESSAGE: CONTROLLER → MODULE
+## MESSAGE: NODE → MODULE
 
-| CONTROLLER                     | MODULE |
+| NODE                           | MODULE |
 |--------------------------------|-|
 | Disable `SB_DAT` interrupts    | |
 | Set `SB_CLK` to OUTPUT, HIGH   | |
@@ -54,25 +54,25 @@ All lines have pullups.
 | Set `SB_CLK` to INPUT          | |
 | Enable `SB_DAT` interrupts     | |
 
-## MESSAGE: MODULE → CONTROLLER
+## MESSAGE: MODULE → NODE
 
-|    | CONTROLLER                      | MODULE |
-|---:|---------------------------------|-|
+|    | NODE                            | MODULE                             |
+|---:|---------------------------------|------------------------------------|
 |  1 |                                 | Disable `SB_DAT` interrupts        |
 |  2 |                                 | Check if `SB_ACT` LOW. If so, wait |
-|  4 |                                 | Set `SB_DAT` to OUTPUT, LOW        |
-|    |                                 | Set `SB_ACT` to OUTPUT |
-|  4 |                                 | Set `SB_ACT` LOW                 |
-|| Could be a moment here where another sensor fires ||
+|  3 |                                 | Set `SB_DAT` to OUTPUT, LOW        |
+|    |                                 | Set `SB_ACT` to OUTPUT             |
+|  4 |                                 | Set `SB_ACT` LOW                   |
+|    | Could be a moment here where another sensor fires |                  |
 || Somewhere in the following, we could have the module ||
 || switch DAT to input & watch for a strobe ||
-|  5 | If not busy:                    | |
-|  6 | Disable `SB_ACT` interrupt      | |
-|    |       | |
+|  5 | If not busy:                    |                                    |
+|  6 | Disable `SB_ACT` interrupt      |                                    |
+|    |                                 |                                    |
 |  7 | Identify device, if found:      | Wait for `SB_CLK` to pulse LOW     |
-|  8 | Set `SB_CLK` OUTPUT, HIGH       | |
-|  9 | Pulse `SB_CLK` LOW              | |
-| 10 | Set `SB_CLK` to INPUT           | Set `SB_DAT` HIGH          |
+|  8 | Set `SB_CLK` OUTPUT, HIGH       |                                    |
+|  9 | Pulse `SB_CLK` LOW              |                                    |
+| 10 | Set `SB_CLK` to INPUT           | Set `SB_DAT` HIGH                  |
 | 11 |                                 | Set `SB_CLK` OUTPUT, HIGH          |
 | 12 | <-- message exchange -->        | <-- message exchange -->           |
 | 13 | <-- reset to default -->        | Set `SB_ACT` HIGH then INPUT       |
@@ -87,14 +87,14 @@ Starts with sender setting `SB_DAT` and `SB_CLK` to HIGH.
 
 |    | SENDER                               | RECEIVER                      |
 |---:|--------------------------------------|-------------------------------|
-|  1 | <-- START_TRANSMISSION_PAUSE -->     | |
-|  2 | <-- START EXCHANGE LOOP -->          | |
-|  3 | For each Byte:                       | |
-|  4 | - For each bit in byte (8 times)     | |
-|  5 |   -- Set bit value on `SB_DAT`       | |
+|  1 | <-- START_TRANSMISSION_PAUSE -->     |                               |
+|  2 | <-- START EXCHANGE LOOP -->          |                               |
+|  3 | For each Byte:                       |                               |
+|  4 | - For each bit in byte (8 times)     |                               |
+|  5 |   -- Set bit value on `SB_DAT`       |                               |
 |  6 |   -- BIT_PAUSE                       | Wait for `SB_CLK` to go LOW   |
 |  7 |   -- Take `SB_CLK` LOW               | Read bit                      |
 |  8 |   -- BIT_PAUSE                       | Wait for `SB_CLK` to go HIGH  |
 |  9 |   -- Take `SB_CLK` HIGH              | Save byte                     |
-| 10 | - BYTE_PAUSE                         | |
-| 11 | <-- END LOOP -->                     | |
+| 10 | - BYTE_PAUSE                         |                               |
+| 11 | <-- END LOOP -->                     |                               |

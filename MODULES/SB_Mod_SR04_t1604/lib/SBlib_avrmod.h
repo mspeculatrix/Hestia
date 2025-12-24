@@ -29,7 +29,7 @@ bool commRequest = false;
 #include <util/delay.h>
 
 #include "app_defines.h"
-#include "smd_avr0_serial.h"
+#include "smd_avrmod_serial.h"
 #include "smd_std_macros.h"
 #include "SBlib_defines.h"
 

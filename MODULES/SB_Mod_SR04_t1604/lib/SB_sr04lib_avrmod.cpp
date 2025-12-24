@@ -1,4 +1,4 @@
-#include "SB_sr04lib_avr0.h"
+#include "SB_sr04lib_avrmod.h"
 
 void enableSensorTimer(void) {
 	// Configure TCA0 for normal (count‑up) mode, no PWM

@@ -1,6 +1,6 @@
 # Makefile for AVR0-based projects.
 
-MCU   = ATtiny1604		# Microcontroller
+MCU   = attiny1604		# Microcontroller
 F_CPU = 20000000UL  	# Clock speed
 
 # The following are where I keep my own code libraries

@@ -18,11 +18,11 @@
 #include <util/delay.h>
 
 #include "lib/app_defines.h"
-#include "lib/smd_avr0_serial.h"
+#include "lib/smd_avrmod_serial.h"
 #include "lib/functions_misc.h"
 #include "lib/SBlib_defines.h"
-#include "lib/SBlib_avr0.h"
-#include "lib/SB_sr04lib_avr0.h"
+#include "lib/SBlib_avrmod.h"
+#include "lib/SB_sr04lib_avrmod.h"
 
 
  /*******************************************************************************
@@ -30,7 +30,7 @@
  *******************************************************************************/
 
  // Using serial only for dev & debugging.
-SMD_AVR0_Serial serial = SMD_AVR0_Serial(SERIAL_BAUDRATE);
+SMD_AVRMod_Serial serial = SMD_AVRMod_Serial(SERIAL_BAUDRATE, &PORTB, TX_PIN, RX_PIN);
 
 volatile bool commRequest = false;
 uint8_t sbMsgOutBuf[MSG_BUF_LEN];	// Buffer for outgoing SB messages

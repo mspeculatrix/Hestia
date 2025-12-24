@@ -1,21 +1,18 @@
 /*
-  C++ Serial Library for ATmega4809
+  C++ Serial Library for modern AVR microcontrollers
+  (Series-0, Series-1, Series-2)
 
   *** IMPORTANT - F_CPU must be set. ***
 
   Typical use:
-  SMD_AVR_Serial4809 serial = SMD_AVR_Serial4809(19200);
+  SMD_AVRMod_Serial serial = SMD_AVRMod_Serial(19200, &PORTA, PIN0_bm, PIN1_bm);
 
   uint8_t error = serial.begin();
 
 */
 
-#ifndef __AVR_ATmega4809__
-#define __AVR_ATmega4809__
-#endif
-
-#ifndef __SMD_AVR_SERIAL4809_H__
-#define __SMD_AVR_SERIAL4809_H__
+#ifndef __SMD_AVRMOD_SERIAL_H__
+#define __SMD_AVRMOD_SERIAL_H__
 #include <stdio.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -63,14 +60,19 @@
 #define SER_RES_EMPTY_STRING 6
 #define SER_ERR_READLINE_BUFFER_TOO_SMALL 7
 
-namespace smd_avr_serial {}
+namespace smd_avrmod_serial {}
 
-class SMD_AVR0_Serial {
+class SMD_AVRMod_Serial {
 public:
 	// Constructors
-	SMD_AVR0_Serial(void);
-	SMD_AVR0_Serial(uint32_t baudrate);
-	SMD_AVR0_Serial(uint32_t baudrate, uint8_t dataBits, uint8_t stopBits);
+	SMD_AVRMod_Serial(void);
+	SMD_AVRMod_Serial(volatile PORT_t* port,
+		uint8_t tx_pin_bm, uint8_t rx_pin_bm);
+	SMD_AVRMod_Serial(uint32_t baudrate, volatile PORT_t* port,
+		uint8_t tx_pin_bm, uint8_t rx_pin_bm);
+	SMD_AVRMod_Serial(uint32_t baudrate, uint8_t dataBits,
+		uint8_t stopBits, volatile PORT_t* port,
+		uint8_t tx_pin_bm, uint8_t rx_pin_bm);
 
 	// Methods
 	uint8_t begin(void);                // initialise
@@ -80,9 +82,9 @@ public:
 	void addCarriageReturn(bool addCR) { _useCR = addCR; }
 
 	// Receiving
-	uint8_t getByte(void);              // read a byte
-	bool inWaiting(void);               // is there a byte waiting in the buffer?
-	bool readByte(uint8_t* byteVal);             // read a byte from buffer
+	uint8_t getByte(void);            // read a byte
+	bool inWaiting(void);             // is there a byte waiting in the buffer?
+	bool readByte(uint8_t* byteVal);  // read a byte from buffer
 	uint8_t readBytes(uint8_t* buf, uint8_t numToRead);
 	uint8_t readLine(char* buffer, size_t bufferSize, bool preserveNewline);
 
@@ -107,12 +109,17 @@ protected:
 	bool _echo;
 	uint8_t _stopBits;
 	uint8_t _parity;
+	volatile PORT_t* _port;
+	uint8_t _rx_pin_bm;
+	uint8_t _tx_pin_bm;
 	bool _started;
 	bool _sendNullTerminator;	// add null terminator 0 to end of all sends?
 	bool _useCR;
 
-	void _init(uint32_t baudrate, uint8_t dataBits, uint8_t stopBits, uint8_t parity);
-	uint8_t _writeInt16(const int twoByteInt, bool addReturn);	// max value 32767
+	void _init(uint32_t baudrate, uint8_t dataBits, uint8_t stopBits,
+		uint8_t parity, volatile PORT_t* port,
+		uint8_t tx_pin_bm, uint8_t rx_pin_bm);
+	uint8_t _writeInt16(const int twoByteInt, bool addReturn);	// max 32767
 	uint8_t _writeLongInt(const long longInt, bool addReturn);
 	uint8_t _writeDouble(const double fnum, bool addReturn);
 	uint8_t _writeStr(const char* string, bool addReturn);
