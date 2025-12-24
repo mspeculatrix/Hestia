@@ -73,7 +73,7 @@ int main(void) {
 
 	// Set up non-changing parts of outgoing message
 	sbMsgOutBuf[0] = MSG_BUF_LEN;		// Max message length
-	sbMsgOutBuf[1] = SENSOR_DATA_US;
+	sbMsgOutBuf[1] = SBMSG_USONIC_DATA_US;
 
 	enableSensorTimer();
 

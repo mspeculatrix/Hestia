@@ -4,6 +4,6 @@
 
 // MESSAGE TYPES
 
-#define SENSOR_DATA_US 10 	// Ultrasonic sensor data
+#define SBMSG_USONIC_DATA_US 10 	// Ultrasonic sensor data
 
 #endif
