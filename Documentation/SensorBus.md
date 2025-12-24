@@ -1,4 +1,4 @@
-# SENSOR BUS
+# SENSORBUS
 
 Each smart sensor or subsystem will be attached to a common serial bus.
 
@@ -6,31 +6,34 @@ This should not be a UART-based thing because we don't want UART buffers on a de
 
 The communication doesn't need to be async because we'll only be pushing data in one direction at a time.
 
+This version uses three signals:
+
+- SB_CLK - shared by all modules
+- SB_ACT - shared by all modules
+- SB_DAT - unique line from module to controller
+
 ## MESSAGE FORMAT
 
-Messages will consist of:
+Messages will consist of bytes:
 
-0. MSG_DATA_LEN - how many bytes of data (not including MSG_TYPE)
+0. MSG_DATA_LEN - how many bytes of data in total
 1. MSG_TYPE - set param, alert, data
 2. Data
 3. ...
 
 ## SIGNALS
 
-Default states:
+Default states (pullups on all lines):
 
-| SIGNAL  | CONTROLLER | MODULE       |
-|---------|------------|--------------|
-| SB_CLK  | INPUT      | INPUT        |
-| SB_DAT  | INPUT, int | INPUT, int   |
+| SIGNAL  | CONTROLLER | MODULE       |           |
+|---------|------------|--------------|-----------|
+| SB_ACT  | INPUT, int | INPUT        | Shared    |
+| SB_CLK  | INPUT      | INPUT        | Shared    |
+| SB_DAT  | INPUT      | INPUT, int   | Dedicated |
 
-Both lines have pullups.
+All lines have pullups.
 
-SB_CLK is shared by all clients.
-
-SB_DAT is a dedicated line from each module to controller.
-
-**NB:** The shared lines are set to inputs by default so that we don't have multiple devices driving the lines high. The `/SB_INT`  and `/SB_ACT` lines will each need one global pullup.
+**NB:** The shared lines are set to inputs by default so that we don't have multiple devices driving the lines high.
 
 ## MESSAGE: CONTROLLER → MODULE
 
@@ -51,23 +54,28 @@ SB_DAT is a dedicated line from each module to controller.
 | Set `SB_CLK` to INPUT          | |
 | Enable `SB_DAT` interrupts     | |
 
-## MESSAGE: CLIENT → HUB
+## MESSAGE: MODULE → CONTROLLER
 
 |    | CONTROLLER                      | MODULE |
 |---:|---------------------------------|-|
-|  1 |                                 | Check if `SB_CLK` LOW. If so, wait |
-|  2 |                                 | Disable `SB_DAT` interrupts        |
-|  3 |                                 | Set `SB_DAT` to OUTPUT, HIGH       |
-|  4 |                                 | Pulse `SB_DAT` LOW                 |
-|  5 | If not busy:                    | Set `SB_DAT` to INPUT              |
-|  6 | Disable all `SB_DAT` interrupts | |
-|  7 | Identify device, if found:      | Wait for `SB_DAT` to pulse LOW     |
-|  8 | Set `SB_DAT` OUTPUT, HIGH       | |
-|  9 | Pulse `SB_DAT` LOW              | |
-| 10 | Set `SB_DAT` to INPUT           | Set `SB_DAT` OUTPUT, HIGH          |
+|  1 |                                 | Disable `SB_DAT` interrupts        |
+|  2 |                                 | Check if `SB_ACT` LOW. If so, wait |
+|  4 |                                 | Set `SB_DAT` to OUTPUT, LOW        |
+|    |                                 | Set `SB_ACT` to OUTPUT |
+|  4 |                                 | Set `SB_ACT` LOW                 |
+|| Could be a moment here where another sensor fires ||
+|| Somewhere in the following, we could have the module ||
+|| switch DAT to input & watch for a strobe ||
+|  5 | If not busy:                    | |
+|  6 | Disable `SB_ACT` interrupt      | |
+|    |       | |
+|  7 | Identify device, if found:      | Wait for `SB_CLK` to pulse LOW     |
+|  8 | Set `SB_CLK` OUTPUT, HIGH       | |
+|  9 | Pulse `SB_CLK` LOW              | |
+| 10 | Set `SB_CLK` to INPUT           | Set `SB_DAT` HIGH          |
 | 11 |                                 | Set `SB_CLK` OUTPUT, HIGH          |
 | 12 | <-- message exchange -->        | <-- message exchange -->           |
-| 13 | <-- reset to default -->        | <-- reset to default -->           |
+| 13 | <-- reset to default -->        | Set `SB_ACT` HIGH then INPUT       |
 
 Step 1 - the client checking if `SB_CLK` is low - is just a quick and dirty check to ensure the bus isn't in use.
 
