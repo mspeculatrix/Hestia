@@ -89,12 +89,13 @@ avr-reset:
 
 # FUSE SETTINGS
 
+# Configure the MCU to use the 20MHz internal oscillator as the main clock
+# and enable the 32.768kHz ULP oscillator needed for the RTC functionality.
+# avrdude -p attiny1604 -c atmelice_updi -P usb -B 125kHz -U fuse2:w:0xc4:m
 fuse_fast_clock:
-    # avrdude -p attiny1604 -c atmelice_updi -P usb -B 125kHz -U fuse2:w:0xc4:m
 	$(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) \
 	           $(PROGRAMMER_ARGS) -U fuse5:w:0xc4:m
 
 info:
-    # avrdude -p atmega4809 -c serialupdi -P /dev/ttyS0 -v
 	$(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) \
 	           $(PROGRAMMER_ARGS) -v

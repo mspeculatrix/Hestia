@@ -41,7 +41,8 @@ uint8_t sbMsgInBuf[MSG_BUF_LEN];	// Buffer for incoming SB messages
 SensorBusModule sbMod = SensorBusModule(&SB_PORT, SB_DAT, SB_CLK, SB_ACT,
 	&SB_PORT.PIN2CTRL, MSG_BUF_LEN);
 
-// *** ISRs ***
+/* **** ISRs ***** */
+
 // Interrupt service routine required by SensorBusModule class.
 // Invoked when /DAT is pulled low.
 ISR(PORTA_PORT_vect) {
@@ -51,7 +52,7 @@ ISR(PORTA_PORT_vect) {
 	}
 }
 
-// ISR called ~every 1 second to initiate ping
+// PIT timer ISR called ~every 1 second to initiate ping
 ISR(RTC_PIT_vect) {
 	// Clear interrupt flag
 	RTC.PITINTFLAGS = RTC_PI_bm; // Writing this bit clears the flag

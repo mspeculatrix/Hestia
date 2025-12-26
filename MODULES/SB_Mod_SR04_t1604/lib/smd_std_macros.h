@@ -4,9 +4,9 @@
 #define __MS_STD_MACROS__
 
 // Ensure we have io/sfr/pindefs loaded
-#ifndef   _AVR_IO_H_
-#include  <avr/io.h>
-#endif
+// #ifndef   _AVR_IO_H_
+// #include  <avr/io.h>
+// #endif
 
 #ifndef ON
 #	define ON 1

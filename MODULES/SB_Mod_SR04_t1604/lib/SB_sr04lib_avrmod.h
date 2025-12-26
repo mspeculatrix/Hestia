@@ -1,11 +1,10 @@
-/* Library for SR04 ultrasonic rangefinder */
+/*
+ * Library for SR04 ultrasonic rangefinder
+ * For use with Modern ATmega and ATtiny microcontrollers (0-, 1- and 2-Series).
+*/
 
 #ifndef __SMD_SR04LIB_AVRMOD__
 #define __SMD_SR04LIB_AVRMOD__
-
-// #ifndef __AVR_ATmega4809__
-// #define __AVR_ATmega4809__
-// #endif
 
 // Ensure we have io/sfr/pindefs loaded
 #ifndef   _AVR_IO_H_

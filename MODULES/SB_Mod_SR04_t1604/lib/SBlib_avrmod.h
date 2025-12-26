@@ -1,40 +1,31 @@
-#ifndef __SMD_SBLIB_4809__
-#define __SMD_SBLIB_4809__
-
-#ifndef __AVR_ATmega4809__
-#define __AVR_ATmega4809__
-#endif
-
 /*
-
-Main class and library for SensorBus modules.
-
-Uses the timeout counter B (TCB).
-
-To use this you need to externally define some stuff, such as:
-
-#define SB_PORT PORTD
-#define SB_DAT PIN0_bm // Chip Enable (Active Low: /CE)
-#define SB_CLK PIN1_bm // Output Enable (Active Low: /OE)
-#define SB_ACT PIN2_bm // Output Enable (Active Low: /OE)
-#define SB_PORT_INT_VEC PORTD_PORT_vect
-#define SB_DAT_CTRL PIN0CTRL // only for non-class stuff
-
-Global var:
-bool commRequest = false;
-
+ *
+ * Main class and library for SensorBus modules.
+ *
+ * Uses the timeout counter B (TCB).
+ *
+ * Requires SBlib_defines.h in same dir
+ *
+ * To use this you need to externally define some stuff, such as:
+ *
+ * #define SB_PORT PORTD
+ * #define SB_DAT PIN0_bm // Chip Enable (Active Low: /CE)
+ * #define SB_CLK PIN1_bm // Output Enable (Active Low: /OE)
+ * #define SB_ACT PIN2_bm // Output Enable (Active Low: /OE)
+ * #define SB_PORT_INT_VEC PORTD_PORT_vect
+ * #define SB_DAT_CTRL PIN0CTRL // only for non-class stuff
+ *
+ * Global var:
+ * bool commRequest = false;
 */
 
-// Ensure we have io/sfr/pindefs loaded
-// #ifndef   _AVR_IO_H_
-// #include  <avr/io.h>
-// #endif
+#ifndef __SBLIB_AVRMOD__
+#define __SBLIB_AVRMOD__
 
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
 #include "app_defines.h"
-#include "smd_avrmod_serial.h"
 #include "smd_std_macros.h"
 #include "SBlib_defines.h"
 
@@ -49,8 +40,6 @@ bool commRequest = false;
 
 #define SB_ERR_CLK_STROBE 10
 #define SB_ERR_TO_BUS 20
-
-// extern SMD_AVR0_Serial serial;
 
 /*
 The main program needs to provide an interrupt service routine (ISR)
