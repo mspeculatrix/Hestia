@@ -1,4 +1,4 @@
-#include "SBlib_avr0.h"
+#include "SBlib_avrmod.h"
 
 /*------------------------------------------------------------------------------
 ---- PUBLIC METHODS                                                         ----
@@ -92,15 +92,15 @@ void SensorBusModule::_setDefaults(void) {
 
 void SensorBusModule::_timeoutCounterInit(void) {
 	TCB0.CTRLA = 0;	// Disable timer before configuration
-	TCB0.CTRLA = TCB_CLKSEL_CLKDIV2_gc;   // Select clock source
-	TCB0.CTRLB = TCB_CNTMODE_INT_gc;      // periodic interrupt mode but interrupts disabled
-	TCB0.INTFLAGS = TCB_CAPT_bm;	// Clear any pending interrupt flag
+	TCB0.CTRLA = TCB_CLKSEL_CLKDIV2_gc;	// Select clock source
+	TCB0.CTRLB = TCB_CNTMODE_INT_gc;	// periodic interrupts, ints disabled
+	TCB0.INTFLAGS = TCB_CAPT_bm;		// Clear any pending interrupt flag
 }
 
 void SensorBusModule::_timeoutCounterStart(uint16_t timeoutValue) {
 	TCB0.CNT = 0;     // Reset count
 	TCB0.CCMP = timeoutValue;			// Load rollover value
-	TCB0.CTRLA |= TCB_ENABLE_bm; 	// Enable the timer
+	TCB0.CTRLA |= TCB_ENABLE_bm; 		// Enable the timer
 }
 
 void SensorBusModule::_timeoutCounterStop(void) {

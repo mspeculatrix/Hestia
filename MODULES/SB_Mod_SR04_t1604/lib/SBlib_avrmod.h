@@ -6,6 +6,11 @@
 #endif
 
 /*
+
+Main class and library for SensorBus modules.
+
+Uses the timeout counter B (TCB).
+
 To use this you need to externally define some stuff, such as:
 
 #define SB_PORT PORTD
@@ -29,7 +34,7 @@ bool commRequest = false;
 #include <util/delay.h>
 
 #include "app_defines.h"
-#include "smd_avr0_serial.h"
+#include "smd_avrmod_serial.h"
 #include "smd_std_macros.h"
 #include "SBlib_defines.h"
 
