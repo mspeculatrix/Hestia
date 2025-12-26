@@ -8,7 +8,7 @@ LIBCOMMON = $(HOME)/avrlib/avr-common
 LIBCPP = $(HOME)/avrlib/avr-c++
 
 # Name of the output files
-TARGET = SB_Mod_SR04_t1604
+TARGET = test
 
 # Round up all the C++ files that need to be compiled
 CPPSOURCES = $(wildcard *.cpp)
@@ -95,6 +95,5 @@ fuse_fast_clock:
 	           $(PROGRAMMER_ARGS) -U fuse5:w:0xc4:m
 
 info:
-    # avrdude -p atmega4809 -c serialupdi -P /dev/ttyS0 -v
 	$(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) \
 	           $(PROGRAMMER_ARGS) -v
