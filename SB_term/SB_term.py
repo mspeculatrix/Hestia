@@ -198,7 +198,7 @@ def main() -> None:
 			set_SB_default_state()
 
 		counter += 1
-		if counter == 6500000:
+		if counter == 6500000:  # totally arbitrary number
 			print('sending')
 			counter = 0
 			msg: list[int] = [4, 50, 170, 255]
