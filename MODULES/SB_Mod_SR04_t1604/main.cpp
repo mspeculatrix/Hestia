@@ -1,7 +1,7 @@
 /*
  * SB_Mod_SR04_t1604
  *
- * ATmega1604 firmware code for an SR04 ultrasonic rangefinder module with a
+ * ATtiny1604 firmware code for an SR04 ultrasonic rangefinder module with a
  * SensorBus interface.
  */
 
@@ -32,8 +32,8 @@
 volatile bool commRequest = false;	// flag set in ISR
 volatile bool performPing = false;	// flag set in ISR
 
-uint8_t sbMsgOutBuf[SensorBus::MSG_BUF_LEN];	// For outgoing SB messages
-uint8_t sbMsgInBuf[SensorBus::MSG_BUF_LEN];		// For incoming SB messages
+// uint8_t sbMsgOutBuf[SensorBus::MSG_BUF_LEN];	// For outgoing SB messages
+// uint8_t sbMsgInBuf[SensorBus::MSG_BUF_LEN];		// For incoming SB messages
 
 // Using serial only for dev & debugging.
 SMD_NG_Serial serial = SMD_NG_Serial(SERIAL_BAUDRATE,
@@ -41,7 +41,7 @@ SMD_NG_Serial serial = SMD_NG_Serial(SERIAL_BAUDRATE,
 
 // SR04 sensor object
 SB_SR04 sr04 = SB_SR04(&SENSOR_PORT, TRIGGER, ECHO,
-	&SB_PORT, SB_CLK, SB_ACT, SB_DAT, &SB_PORT.PIN2CTRL);
+	&SB_PORT, SB_CLK, SB_ACT, SB_DAT, &SB_DATPORT, &SB_PORT.PIN2CTRL);
 
 /* **** ISRs ***** */
 
@@ -78,8 +78,8 @@ int main(void) {
 	LED_PORT.OUTCLR = ALERT_LED | ACT_LED;	// Set to off
 
 	// Set up non-changing parts of outgoing message
-	sbMsgOutBuf[0] = MSG_BUF_LEN;			// Max message length
-	sbMsgOutBuf[1] = SBMSG_USONIC_DATA_US;	// Message type
+	sr04.sendMsg[0] = 4;
+	sr04.sendMsg[1] = SBMSG_USONIC_DATA_US;	// Message type
 
 	SENSOR_PORT.OUTCLR = TRIGGER; 			// Default to low
 	SENSOR_PORT.DIRSET = TRIGGER;			// Set as output
@@ -117,16 +117,18 @@ int main(void) {
 		// }
 
 		if (performPing) {
+			cli();
 			LED_PORT.OUTSET = ACT_LED;
-			uint16_t dist = sr04.ping();
-			serial.writeln((int)dist);
 			performPing = false;
-			// sbMsgOutBuf[0] = 4;
-			// sbMsgOutBuf[2] = (uint8_t)(dist & 0x00FF);	// low byte
-			// sbMsgOutBuf[3] = (uint8_t)(dist >> 8);		// high byte
-			// sbMod.sendMessage(sbMsgOutBuf);
+			uint16_t dist = sr04.ping();	// Perform the ping
+			serial.write((int)dist);
+			sr04.sendMsg[2] = (uint8_t)(dist & 0x00FF);	// low byte
+			// sr04.sendMsg[3] = 0xFF;		// high byte
+			sr04.sendMsg[3] = (uint8_t)(dist >> 8);		// high byte
+			err_code err = sr04.sendMessage();
+			serial.write(" > "); serial.writeln(sr04.errMsg(err));
 			LED_PORT.OUTCLR = ACT_LED;
+			sei();
 		}
-
 	}
 }

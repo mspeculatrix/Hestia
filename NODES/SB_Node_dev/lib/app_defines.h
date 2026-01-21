@@ -1,4 +1,4 @@
-// app_defines.h
+/* app_defines.h for SB_Node_dev app */
 
 #define DAT_PORT PORTD
 #define DAT_ISR_VECTOR PORTD_PORT_vect
@@ -12,4 +12,4 @@
 #define MSG_BUF_LEN 16
 
 // The following define to which pins modules are connected
-#define MOD_SRO4 0
+#define MOD_SRO4 PIN0_bm

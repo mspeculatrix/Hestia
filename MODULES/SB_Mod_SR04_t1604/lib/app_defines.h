@@ -1,3 +1,5 @@
+/* app_defines.h for SB_Mod_SR04_t1604 app */
+
 #ifndef __DEFINES_H__
 #define __DEFINES_H__
 
@@ -24,6 +26,7 @@
 #define SB_DAT  PIN2_bm // Chip Enable (Active Low: /CE)
 #define SB_CLK  PIN3_bm // Output Enable (Active Low: /OE)
 #define SB_ACT  PIN1_bm // Output Enable (Active Low: /OE)
+#define SB_DATPORT PORTA
 #define SB_PORT_INT_VEC PORTA_PORT_vect
 
 #define LED_PORT  PORTB
