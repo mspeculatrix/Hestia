@@ -1,5 +1,5 @@
 #ifndef __APP_FUNCTIONS_H__
-#define __APP+FUNCTIONS_H__
+#define __APP_FUNCTIONS_H__
 
 
 #include <avr/io.h>
@@ -21,16 +21,20 @@ void clearBuf(char* buf, uint8_t len) {
 	}
 }
 
+// Flash an LED once.
 void flashLED(uint8_t led) {
 	LED_PORT.OUTSET = led;
 	_delay_ms(DEFAULT_LED_FLASH_DELAY);
 	LED_PORT.OUTCLR = led;
 }
 
+// Flash a specified LED a default number of times.
+// Wrapper to next function.
 void pulseLED(uint8_t led) {
 	pulseLED(led, DEFAULT_LED_PULSE_CYCLES);
 }
 
+// Flash a specified LED a given number of times.
 void pulseLED(uint8_t led, uint8_t numPulses) {
 	for (uint8_t i = 0; i < numPulses; i++) {
 		LED_PORT.OUTSET = led;
@@ -43,15 +47,16 @@ void pulseLED(uint8_t led, uint8_t numPulses) {
 /* PIT timer functions
 
 The Periodic Interrupt Timer (PIT) is part of the RTC block.
-
 These functions assume the default 32.768 kHz ULP oscillator for the RTC.
-
 */
+
+// Initialise the Periodic Interrupt Timer (PIT). This needs to be called
+// once during the setup part of main().
 void PIT_init() {
 	// Wait for all RTC registers to be synchronized
 	while (RTC.STATUS > 0);
 
-	// Select internal 32.768 kHz oscillator
+	// Select internal 32.768kHz oscillator
 	RTC.CLKSEL = RTC_CLKSEL_INT32K_gc;
 
 	// Wait for synchronization
@@ -73,15 +78,16 @@ void PIT_init() {
 	RTC.PITCTRLA = RTC_PERIOD_CYC32768_gc | RTC_PITEN_bm;
 }
 
+// Enable the Periodic Interrupt Timer (PIT). Call this AFTER sei().
 void PIT_enable() {
 	while (RTC.PITSTATUS > 0); // Important and easy to overlook !
 	RTC.PITCTRLA |= RTC_PITEN_bm;
 }
 
+// Disable the Periodic Interrupt Timer (PIT)
 void PIT_disable() {
 	while (RTC.PITSTATUS > 0);
 	RTC.PITCTRLA &= ~RTC_PITEN_bm;
 }
-
 
 #endif
