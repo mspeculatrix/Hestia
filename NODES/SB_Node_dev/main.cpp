@@ -1,7 +1,7 @@
 /*
  * SB_Node_dev
  *
- * ATmega4809 firmware code for a SensorBus node.
+ * ATmega4809 firmware code for a generic SensorBus node.
  */
 
 #ifndef __AVR_ATmega4809__
@@ -82,7 +82,6 @@ int main(void) {
 				SensorBus::err_code err = node.recvMessage(MOD_SRO4);
 				if (err == ERR_NONE) {
 					serial.write(": ");
-					//serial.writeln(*node.recvMsg);
 					for (uint8_t i = 0; i < node.recvMsg[0]; i++) {
 						serial.write(node.recvMsg[i]);
 						serial.write(" ");

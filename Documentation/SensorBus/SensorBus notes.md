@@ -50,7 +50,7 @@ The DAT pins (at both ends) have interrupts enabled on falling edges.
 
 ## SEND MESSAGE
 
-The function names refer to the functions in my C++ library `SB_devicelib_ng` for AVR 0-Series microcontrollers, notably the ATmega4809 and ATtiny1604.
+The function names refer to the functions in my C++ library `SB_devicelib_ng` for modern AVR microcontrollers, notably the ATmega4809 and ATtiny1604.
 
 | SENDER                            | RECEIVER                       |
 |-----------------------------------|--------------------------------|
