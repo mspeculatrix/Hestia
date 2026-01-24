@@ -52,7 +52,7 @@ ISR(SB_DAT_ISR_VEC) {
 	SB_DATPORT.INTFLAGS = sr04.commRequestRcvd;	// clear flags
 }
 
-// PIT timer ISR called ~every 1 second to initiate ping
+// PIT timer ISR called ~every 0.5 second to initiate ping
 ISR(RTC_PIT_vect) {
 	pitTickCounter++;
 	RTC.PITINTFLAGS = RTC_PI_bm; 		// Clears the interrupt register flag

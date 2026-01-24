@@ -19,13 +19,10 @@
 #include <smd_ng_serial.h>
 
 #include "lib/app_defines.h"
-#include "lib/app_functions.h"
 
  /******************************************************************************
  *****     GLOBALS                                                         *****
  ******************************************************************************/
-
- // volatile int8_t commRequestRcvd = -1;	// flag set in ISR
 
 SB_Node node = SB_Node(&SB_PORT, SB_CLK, SB_ACT, &SB_DATPORT);
 
@@ -62,7 +59,7 @@ int main(void) {
 	***************************************************************************/
 
 	uint32_t debug_count = 0;
-	node.sendMsgBuf[0] = 6;
+	node.sendMsgBuf[0] = 6;			// DUMMY DATA - for testing
 	node.sendMsgBuf[1] = 30;
 	node.sendMsgBuf[2] = 44;
 	node.sendMsgBuf[3] = 55;
@@ -72,6 +69,7 @@ int main(void) {
 
 	while (1) {
 
+		// DUMMY ROUTINE - for testing the send functionality
 		debug_count++;
 		if (debug_count == 0x005F0000) {
 			debug_count = 0;
@@ -87,7 +85,6 @@ int main(void) {
 
 
 		if (node.commRequestRcvd >= 0) {
-
 			// A module is requesting comms
 			cli();	// Disable interrupts while dealing with this.
 

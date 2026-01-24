@@ -6,7 +6,7 @@
 #define SB_CLK 			PIN0_bm
 #define SB_ACT 			PIN1_bm
 
-#define SERIAL_BAUDRATE 19200
+#define SERIAL_BAUDRATE 57600
 #define TX_PIN PIN0_bm
 #define RX_PIN PIN1_bm
 #define MSG_BUF_LEN 16

@@ -1,11 +1,11 @@
 /* app_defines.h for SB_Mod_SR04_t1604 app */
 
-#ifndef __DEFINES_H__
-#define __DEFINES_H__
+#ifndef __APP_DEFINES_H__
+#define __APP_DEFINES_H__
 
 #include <avr/io.h>
 
-#define SERIAL_BAUDRATE 19200
+#define SERIAL_BAUDRATE 57600
 #define TX_PIN PIN2_bm
 #define RX_PIN PIN3_bm
 
