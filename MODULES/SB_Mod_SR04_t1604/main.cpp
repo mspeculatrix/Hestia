@@ -29,11 +29,13 @@
  *****     GLOBALS                                                         *****
  ******************************************************************************/
 
-volatile bool commRequest = false;	// flag set in ISR
 volatile bool performPing = false;	// flag set in ISR
-
-// uint8_t sbMsgOutBuf[SensorBus::MSG_BUF_LEN];	// For outgoing SB messages
-// uint8_t sbMsgInBuf[SensorBus::MSG_BUF_LEN];		// For incoming SB messages
+// We're setting up the Periodic Interrupt Timer (PIT) to produce an interrupt
+// every 0.5sec. We don't want to fire a ping that frequently so we use a
+// counter to decide how often to ping.
+volatile uint8_t pitTickCounter = 0;
+// Following is the number of half-seconds we count before firing off a ping.
+const uint8_t PIT_TICK_COUNT_THRESHOLD = 5; // 3 = 1.5second period
 
 // Using serial only for dev & debugging.
 SMD_NG_Serial serial = SMD_NG_Serial(SERIAL_BAUDRATE,
@@ -41,23 +43,23 @@ SMD_NG_Serial serial = SMD_NG_Serial(SERIAL_BAUDRATE,
 
 // SR04 sensor object
 SB_SR04 sr04 = SB_SR04(&SENSOR_PORT, TRIGGER, ECHO,
-	&SB_PORT, SB_CLK, SB_ACT, SB_DAT, &SB_DATPORT, &SB_PORT.PIN2CTRL);
+	&SB_PORT, SB_CLK, SB_ACT, SB_DAT, &SB_DATPORT, &SB_DATPORT.SB_DAT_CTRL);
 
 /* **** ISRs ***** */
 
-// Interrupt service routine required by SensorBusModule class.
-// Invoked when /DAT is pulled low.
-ISR(PORTA_PORT_vect) {
-	if (SB_PORT.INTFLAGS & SB_DAT) {		// Check if /DAT triggered
-		SB_PORT.INTFLAGS = SB_DAT;			// Clear interrupt flag
-		commRequest = true;					// Set event flag
-	}
+ISR(SB_DAT_ISR_VEC) {
+	sr04.commRequestRcvd = SB_DATPORT.INTFLAGS;	// set to bits triggering interrupt(s)
+	SB_DATPORT.INTFLAGS = sr04.commRequestRcvd;	// clear flags
 }
 
 // PIT timer ISR called ~every 1 second to initiate ping
 ISR(RTC_PIT_vect) {
-	RTC.PITINTFLAGS = RTC_PI_bm; 	// Clears the interrupt register flag
-	performPing = true;				// Set event flag
+	pitTickCounter++;
+	RTC.PITINTFLAGS = RTC_PI_bm; 		// Clears the interrupt register flag
+	if (pitTickCounter == PIT_TICK_COUNT_THRESHOLD) {
+		performPing = true;				// Set event flag
+		pitTickCounter = 0;
+	}
 }
 
 
@@ -78,8 +80,8 @@ int main(void) {
 	LED_PORT.OUTCLR = ALERT_LED | ACT_LED;	// Set to off
 
 	// Set up non-changing parts of outgoing message
-	sr04.sendMsg[0] = 4;
-	sr04.sendMsg[1] = SBMSG_USONIC_DATA_US;	// Message type
+	sr04.sendMsgBuf[0] = 4;
+	sr04.sendMsgBuf[1] = SBMSG_USONIC_DATA_US;	// Message type
 
 	SENSOR_PORT.OUTCLR = TRIGGER; 			// Default to low
 	SENSOR_PORT.DIRSET = TRIGGER;			// Set as output
@@ -90,7 +92,7 @@ int main(void) {
 	pulseLED(ACT_LED);						// Show we're alive
 	pulseLED(ALERT_LED);
 
-	PIT_init();								// Config timer for regular pings
+	PIT_init();		// Config timer for regular pings
 	sei();
 	PIT_enable();
 
@@ -102,32 +104,39 @@ int main(void) {
 
 	while (1) {
 
-		// if (commRequest) {
-		//	PIT_disable();	// Disable pings
-		// 	commRequest = false;
-		// 	sbMod.setReceiveMode(); // go into receive mode
-		// 	sbMod.strobeClk();
-
-		// 	// uint8_t msgLen = 0;
-		// 	// read a byte & set msgLen
-		// 	// loop for remaining bytes
-		// 	// decide what to do with message
-
-		//	PIT_enable();	// Re-enable pings
-		// }
+		if (sr04.commRequestRcvd >= 0) {
+			cli();
+			PIT_disable();	// Disable pings
+			SensorBus::err_code err = sr04.recvMessage(SB_DAT);
+			serial.write("<< ");
+			if (err == ERR_NONE) {
+				sr04.printMsg(sr04.recvMsgBuf);
+			} else {
+				serial.writeln(sr04.errMsg(err));
+			}
+			sr04.commRequestRcvd = -1;
+			PIT_restart();	// Re-enable pings
+			SB_DATPORT.INTFLAGS = SB_DAT;
+			sei();
+		}
 
 		if (performPing) {
 			cli();
+			PIT_disable();	// Disable ping timer
 			LED_PORT.OUTSET = ACT_LED;
 			performPing = false;
 			uint16_t dist = sr04.ping();	// Perform the ping
-			serial.write((int)dist);
-			sr04.sendMsg[2] = (uint8_t)(dist & 0x00FF);	// low byte
-			// sr04.sendMsg[3] = 0xFF;		// high byte
-			sr04.sendMsg[3] = (uint8_t)(dist >> 8);		// high byte
-			err_code err = sr04.sendMessage();
-			serial.write(" > "); serial.writeln(sr04.errMsg(err));
+			//serial.write((int)dist);
+			sr04.sendMsgBuf[2] = (uint8_t)(dist & 0x00FF);	// low byte
+			sr04.sendMsgBuf[3] = (uint8_t)(dist >> 8);		// high byte
+			err_code err = sr04.sendMessage();	// TRANSMIT
+			if (err > 0) {
+				serial.writeln(sr04.errMsg(err));
+			}
 			LED_PORT.OUTCLR = ACT_LED;
+			// SB_DATPORT.INTFLAGS = SB_DAT;
+			sr04.commRequestRcvd = -1;
+			PIT_restart();
 			sei();
 		}
 	}

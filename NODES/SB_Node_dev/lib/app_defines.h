@@ -1,10 +1,10 @@
 /* app_defines.h for SB_Node_dev app */
 
-#define DAT_PORT PORTD
-#define DAT_ISR_VECTOR PORTD_PORT_vect
-#define SB_PORT PORTE
-#define SB_CLK PIN0_bm
-#define SB_ACT PIN1_bm
+#define SB_DATPORT 		PORTD
+#define SB_DAT_ISR_VEC	PORTD_PORT_vect
+#define SB_PORT 		PORTE
+#define SB_CLK 			PIN0_bm
+#define SB_ACT 			PIN1_bm
 
 #define SERIAL_BAUDRATE 19200
 #define TX_PIN PIN0_bm

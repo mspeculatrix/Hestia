@@ -52,21 +52,16 @@ These functions assume the default 32.768 kHz ULP oscillator for the RTC.
 
 // Initialise the Periodic Interrupt Timer (PIT). This needs to be called
 // once during the setup part of main().
-void PIT_init() {
+void PIT_init(void) {
 	// Wait for all RTC registers to be synchronized
 	while (RTC.STATUS > 0);
-
 	// Select internal 32.768kHz oscillator
 	RTC.CLKSEL = RTC_CLKSEL_INT32K_gc;
-
-	// Wait for synchronization
-	while (RTC.STATUS > 0);
+	while (RTC.STATUS > 0);					// Wait for synchronization
 
 	// Enable RTC with prescaler (required for PIT to work)
 	RTC.CTRLA = RTC_PRESCALER_DIV1_gc | RTC_RTCEN_bm;
-
-	// Wait for synchronization
-	while (RTC.STATUS > 0);
+	while (RTC.STATUS > 0);					// Wait for synchronization
 
 	// Wait for PIT registers to be ready
 	while (RTC.PITSTATUS > 0);
@@ -74,8 +69,18 @@ void PIT_init() {
 	// Enable PIT interrupt BEFORE enabling PIT
 	RTC.PITINTCTRL = RTC_PI_bm;
 
-	// Configure PIT period AND enable it
-	RTC.PITCTRLA = RTC_PERIOD_CYC32768_gc | RTC_PITEN_bm;
+	// Configure PIT period AND enable it. The following values determine the
+	// approximate intervals at which the interrupt fires (other, smaller,
+	// values may be available):
+	//     RTC_PERIOD_CYC4096_gc 	- 125 ms
+	//     RTC_PERIOD_CYC8192_gc	- 250 ms
+	//     RTC_PERIOD_CYC16384_gc	- 500 ms
+	//     RTC_PERIOD_CYC32768_gc 	- 1 sec
+	// The ATtiny1604 can't go beyond this but some microcontrollers, such as
+	// the ATmega4809, can use:
+	//     RTC_PERIOD_CYC65536_gc	- 2 secs
+
+	RTC.PITCTRLA = RTC_PERIOD_CYC16384_gc | RTC_PITEN_bm; // 0.5 sec interval
 }
 
 // Enable the Periodic Interrupt Timer (PIT). Call this AFTER sei().
@@ -86,8 +91,28 @@ void PIT_enable() {
 
 // Disable the Periodic Interrupt Timer (PIT)
 void PIT_disable() {
+	RTC.PITINTCTRL &= ~RTC_PI_bm;				// Disable the interrupt first
+	while (RTC.PITSTATUS & RTC_CTRLBUSY_bm);	// Wait for PIT synchronization
+	RTC.PITCTRLA &= ~RTC_PITEN_bm;	    		// Turn off the PIT
+}
+
+void PIT_restart() {
+	// Wait for synchronization
+	while (RTC.STATUS > 0 || RTC.PITSTATUS > 0);
+
+	// Reset the RTC Prescaler by toggling RTCEN
+	// This forces the internal prescaler (and thus the PIT) back to 0
+	uint8_t temp = RTC.CTRLA;
+	RTC.CTRLA = temp & ~RTC_RTCEN_bm;
+	while (RTC.STATUS > 0); // Wait for sync
+	RTC.CTRLA = temp | RTC_RTCEN_bm;
+	while (RTC.STATUS > 0); // Wait for sync
+
+	// Re-enable PIT and its interrupt
+	RTC.PITINTCTRL = RTC_PI_bm;
+
 	while (RTC.PITSTATUS > 0);
-	RTC.PITCTRLA &= ~RTC_PITEN_bm;
+	RTC.PITCTRLA |= RTC_PITEN_bm;
 }
 
 #endif
