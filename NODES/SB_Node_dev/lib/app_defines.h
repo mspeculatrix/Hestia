@@ -12,4 +12,5 @@
 #define MSG_BUF_LEN 16
 
 // The following define to which pins modules are connected
-#define MOD_SRO4 PIN0_bm
+#define MOD_SRO4  PIN0_bm
+#define MOD_SERVO PIN1_bm

@@ -75,7 +75,7 @@ int main(void) {
 			debug_count = 0;
 			cli();
 			// node.printBuf(node.sendMsgBuf);
-			err_code err = node.sendMessage(MOD_SRO4);
+			err_code err = node.sendMessage(MOD_SERVO);
 			if (err > 0) {
 				serial.writeln(node.errMsg(err));
 			}
