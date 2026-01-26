@@ -1,12 +1,4 @@
-# SB_term
-
-A Python-based 'terminal' for communicating with Sensor Bus devices.
-
-Runs on a Raspberry Pi.
-
-For experimentation and development. Basically, this take the place of a sensor 'node', talking to a group of related sensors/systems. It's just a tool for seeing if sensor modules are working, trying them out etc. It will play no part in the final robot project.
-
-## RASPBERRY PI PINOUT
+# RASPBERRY PI PINOUT
 
 | BCM |   Name  | Physical | Name    | BCM |
 |:---:|:-------:|:--------:|:-------:|:---:|

@@ -4,6 +4,9 @@ An experimental sensor node for playing around with and developing SensorBus cod
 
 This version is based around the ATmega4809A. I could foresee others being based on the STM32.
 
+This is designed to work with up to 8 modules whose DAT lines are connected
+to Port D.
+
 ## PIN ASSIGNMENTS
 
 | MCU pin | DIP pin | Description          |

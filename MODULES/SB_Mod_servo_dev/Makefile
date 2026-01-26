@@ -1,16 +1,10 @@
-# Base Makefile for ATtiny & ATmega projects
-
-# Edit the following for the project & microcontroller
-MCU   = atmega4809
-
+# Makefile for ATtiny1604-based projects.
+MCU   = attiny1604
 F_CPU = 20000000UL
-
-TARGET = SB_Node_dev
+TARGET = SB_Mod_servo_dev
 
 # ----- PROJECT DEPENDENCIES ---------------------------------------------------
-
-# Edit these lists to include required library files from ~/avrlib/avr-common
-# and ~/avrlib/avr-c++
+# Edit these lists to include custom library files.
 
 # HEADER-ONLY LIBRARIES - list all header-only dependencies
 AVRLIB_HDRS = SB_lib_defines.h \
@@ -18,21 +12,10 @@ AVRLIB_HDRS = SB_lib_defines.h \
 
 # CUSTOM LIBRARY IMPLEMENTATIONS - list all custom libraries (.cpp files)
 AVRLIB_SRCS = SB_devicelib_ng.cpp \
-	SB_nodelib_ng.cpp \
+	SB_modulelib_ng.cpp \
+	SB_servolib_ng.cpp \
 	smd_ng_serial.cpp
 
-# ----- Programmer Settings - select one set -----------------------------------
-
-# For 'modern' AVRs using Atmel-ICE
-PROGRAMMER_TYPE = atmelice_updi
-PROGRAMMER_ARGS = -P usb -B 125kHz
-
-# For 'modern' AVRs using serial UPDI
-# PROGRAMMER_TYPE = serialupdi
-# PROGRAMMER_ARGS = -P /dev/ttyUSB0
-
-# ------------------------------------------------------------------------------
-# Everything below can be left as-is
 # ------------------------------------------------------------------------------
 
 # Library Paths
@@ -56,10 +39,16 @@ OBJDUMP  = avr-objdump
 AVRSIZE  = avr-size
 AVRDUDE  = avrdude
 
+# Programmer Settings
+# PROGRAMMER_TYPE = atmelice_updi
+# PROGRAMMER_ARGS = -P usb -B 125kHz
+PROGRAMMER_TYPE = serialupdi
+PROGRAMMER_ARGS = -P /dev/ttyUSB0
+
 # Compiler flags
 CPPFLAGS = -Os -DF_CPU=$(F_CPU) -I. -Ilib -I$(LIBCOMMON) -I$(LIBCPP)
-CPPFLAGS += -Wall -funsigned-char -funsigned-bitfields -fpack-struct
-CPPFLAGS += -fshort-enums -ffunction-sections -fdata-sections -MMD -MP
+CPPFLAGS += -Wall -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
+CPPFLAGS += -ffunction-sections -fdata-sections -MMD -MP
 
 # Linker flags
 LDFLAGS = -DF_CPU=$(F_CPU) -lm -Os -Wl,-Map,$(TARGET).map -Wl,--gc-sections
@@ -67,13 +56,13 @@ LDFLAGS = -DF_CPU=$(F_CPU) -lm -Os -Wl,-Map,$(TARGET).map -Wl,--gc-sections
 # Other flags
 TARGET_ARCH = -mmcu=$(MCU)
 
-# ----- Rules ------------------------------------------------------------------
+# --- Rules ---
 
 .PHONY: all clean flash size disassemble debug info
 
 all: $(TARGET).hex size
 
-# Compile .cpp to .o
+# Rule to compile .cpp to .o
 %.o: %.cpp $(AVRLIB_HDRS) Makefile
 	$(CXX) $(CPPFLAGS) $(TARGET_ARCH) -c -o $@ $<
 
@@ -92,7 +81,7 @@ $(TARGET).elf: $(OBJECTS)
 # Include dependency files (.d)
 -include $(OBJECTS:.o=.d)
 
-# ----- Maintenance ------------------------------------------------------------
+# --- Maintenance ---
 
 size:
 	$(AVRSIZE) $(TARGET).elf
@@ -100,7 +89,7 @@ size:
 clean:
 	rm -f *.elf *.hex *.o *.d *.map *.lst lib/*.o
 
-# ----- Actions ----------------------------------------------------------------
+# --- Actions ---
 
 flash: $(TARGET).hex
 	$(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) $(PROGRAMMER_ARGS) -U flash:w:$<
@@ -111,15 +100,8 @@ debug: clean
 debug: CPPFLAGS += -g -DDEBUG
 debug: $(TARGET).hex
 
+fuse_fast_clock:
+	$(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) $(PROGRAMMER_ARGS) -U fuse5:w:0xc4:m
+
 info:
 	$(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) $(PROGRAMMER_ARGS) -v
-
-# ----- Fuse settings ----------------------------------------------------------
-
-m4809_enable_reset:
-	$(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) \
-	           $(PROGRAMMER_ARGS) -U fuse5:w:0xc8:m
-
-m4809_fast_clock:
-	$(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) \
-	           $(PROGRAMMER_ARGS) -U fuse2:w:0x02:m
