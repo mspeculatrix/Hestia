@@ -13,7 +13,7 @@ AVRLIB_HDRS = SB_lib_defines.h \
 # CUSTOM LIBRARY IMPLEMENTATIONS - list all custom libraries (.cpp files)
 AVRLIB_SRCS = SB_devicelib_ng.cpp \
 	SB_modulelib_ng.cpp \
-	SB_servolib_ng.cpp \
+	SB_servolib_t1604.cpp \
 	smd_ng_serial.cpp
 
 # ------------------------------------------------------------------------------

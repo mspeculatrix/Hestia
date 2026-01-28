@@ -18,7 +18,7 @@
 
 #include <smd_ng_serial.h>
 #include <SB_lib_defines.h>
-#include <SB_servolib_ng.h>
+#include <SB_servolib_t1604.h>
 
 #include "lib/app_defines.h"
 
@@ -30,14 +30,14 @@
 SMD_NG_Serial serial = SMD_NG_Serial(SERIAL_BAUDRATE,
 	&PORTB, TX_PIN, RX_PIN);
 
-SB_Servo servo = SB_Servo(&SERVO_PORT, SERVO_PIN, &SB_PORT, SB_CLK, SB_ACT,
-	SB_DAT, &SB_DATPORT, &SB_DATPORT.SB_DAT_CTRL);
+SB_Servo::SB_Servo_t1604 servo = SB_Servo::SB_Servo_t1604(&SB_PORT, SB_CLK,
+	SB_ACT, SB_DAT, &SB_DATPORT, &SB_DATPORT.SB_DAT_CTRL);
 
 /* **** ISRs ***** */
 
 ISR(SB_DAT_ISR_VEC) {
-	servo.commRequestRcvd = SB_DATPORT.INTFLAGS;	// set to bits triggering interrupt(s)
-	SB_DATPORT.INTFLAGS = servo.commRequestRcvd;	// clear flags
+	servo.commRequestRcvd = SB_DATPORT.INTFLAGS; // gets bits triggering int(s)
+	SB_DATPORT.INTFLAGS = servo.commRequestRcvd; // clear flags
 }
 
 /*******************************************************************************
@@ -52,11 +52,8 @@ int main(void) {
 	CCP = CCP_IOREG_gc;     		// Unlock protected registers
 	CLKCTRL.MCLKCTRLB = 0;  		// No prescaling, full main clock frequency
 
-	SERVO_PORT.DIRSET = SERVO_PIN; 	// Set as output, always and forever
-	LED_PORT.DIRSET = LED_PIN;		// -- ditto --
-	LED_PORT.OUTCLR = LED_PIN;		// Startup OFF
-
 	serial.begin();
+	servo.begin();
 
 	serial.writeln("SB_Mod_servo_dev running");	// Just for dev/debugging
 
@@ -64,18 +61,42 @@ int main(void) {
 	****** MAIN LOOP                                                       *****
 	***************************************************************************/
 
+	uint32_t debug_count = 0;
+	servo.sendMsgBuf[0] = 3;			// DUMMY DATA - for testing
+	servo.sendMsgBuf[1] = 0x55;
+	servo.sendMsgBuf[2] = 0xAA;
+
 	while (1) {
 		if (servo.commRequestRcvd >= 0) {
 			cli();
 			SensorBus::err_code err = servo.recvMessage(SB_DAT);
-			serial.writeln("<< ");
 			if (err == ERR_NONE) {
+				serial.write("<< ");
+				switch (servo.recvMsgBuf[1]) {
+					case SBMSG_SET_PARAM:
+						servo.setAngle(SB_Servo::SB_SERVO_A, servo.recvMsgBuf[2]);
+						break;
+				}
 				servo.printMsg(servo.recvMsgBuf);
 			} else {
 				serial.writeln(servo.errMsg(err));
 			}
 			servo.commRequestRcvd = -1;
 			SB_DATPORT.INTFLAGS = SB_DAT;
+			sei();
+		}
+
+		// DUMMY ROUTINE - for testing the send functionality
+		debug_count++;
+		if (debug_count == 0x003F0000) {
+			debug_count = 0;
+			cli();
+			// servo.printBuf(servo.sendMsgBuf);
+			err_code err = servo.sendMessage();
+			//if (err > 0) {
+			serial.writeln(servo.errMsg(err));
+			//}
+			SB_DATPORT.INTFLAGS = 0xFF;
 			sei();
 		}
 	}

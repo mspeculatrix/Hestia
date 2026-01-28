@@ -9,16 +9,13 @@
 #define TX_PIN PIN2_bm
 #define RX_PIN PIN3_bm
 
-// Pin allocations
-#define SERVO_PORT  PORTA
-#define SERVO_PIN   PIN3_bm
-
-#define LED_PORT PORTB
-#define LED_PIN  PIN0_bm
+#define LED_PORT PORTA
+#define LEDA_PIN  PIN4_bm
+#define LEDB_PIN  PIN7_bm
 
 // SensorBus ports, pins, ISR vector
 #define SB_PORT 		PORTA
-#define SB_CLK  		PIN5_bm
+#define SB_CLK  		PIN3_bm
 #define SB_ACT  		PIN2_bm
 #define SB_DATPORT 		PORTA
 #define SB_DAT  		PIN1_bm

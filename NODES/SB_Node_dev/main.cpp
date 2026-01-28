@@ -12,12 +12,14 @@
 #define F_CPU 20000000UL // 20 MHz unsigned long
 #endif
 
+#include <stdlib.h>
+#include <stdint.h>
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <SB_nodelib_ng.h>
 #include <smd_ng_serial.h>
-
 #include "lib/app_defines.h"
 
  /******************************************************************************
@@ -59,13 +61,13 @@ int main(void) {
 	***************************************************************************/
 
 	uint32_t debug_count = 0;
-	node.sendMsgBuf[0] = 6;			// DUMMY DATA - for testing
-	node.sendMsgBuf[1] = 30;
-	node.sendMsgBuf[2] = 44;
-	node.sendMsgBuf[3] = 55;
-	node.sendMsgBuf[4] = 66;
-	node.sendMsgBuf[5] = 255;
-
+	node.sendMsgBuf[0] = 4;			// DUMMY DATA - for testing
+	node.sendMsgBuf[1] = SBMSG_SET_PARAM;
+	node.sendMsgBuf[2] = 0;
+	// uint8_t angle = 90;
+	uint8_t angleIdx = 0;
+	const uint8_t numAngles = 5;
+	uint8_t angles[] = { 0, 45, 90, 135, 180 };
 
 	while (1) {
 
@@ -74,7 +76,11 @@ int main(void) {
 		if (debug_count == 0x005F0000) {
 			debug_count = 0;
 			cli();
-			// node.printBuf(node.sendMsgBuf);
+			// node.sendMsgBuf[2] = static_cast<uint8_t>(rand() % 180);
+			node.sendMsgBuf[3] = angles[angleIdx];
+			angleIdx++;
+			if (angleIdx == numAngles) angleIdx = 0;
+			serial.write(">> "); node.printBuf(node.sendMsgBuf);
 			err_code err = node.sendMessage(MOD_SERVO);
 			if (err > 0) {
 				serial.writeln(node.errMsg(err));
@@ -88,31 +94,33 @@ int main(void) {
 			// A module is requesting comms
 			cli();	// Disable interrupts while dealing with this.
 
-			// commRequestRcvd's bits tells you which module(s) made the request
-			// We should cycle through them and call responder functions as
-			// appropriate.
+			// Get the incoming message
+			SensorBus::err_code err = node.recvMessage(node.commRequestRcvd);
 
-			// The order of these if statements determines the priority we
-			// place on the sensors.
-
-			if (node.commRequestRcvd & (MOD_SRO4)) {
-				SensorBus::err_code err = node.recvMessage(MOD_SRO4);
-				serial.write("<< ");
-				// __builtin_ctz(value) turns an eight-bit value with 1 bit set
-				// to its bit position value - eg, 00001000 becomes 3.
-				// It does this by counting trailing zeros (hence ctz)
-				serial.write(__builtin_ctz(node.commRequestRcvd));
-				if (err == ERR_NONE) {
-					uint16_t data = node.recvMsgBuf[2];
-					data |= node.recvMsgBuf[3] << 8;
-					serial.write(" ");
-					serial.write((int)data);
+			if (err == ERR_NONE) {
+				uint8_t device = 0;
+				// Following test checks that one and only one bit is set in
+				// node.commRequestRcvd
+				if ((node.commRequestRcvd > 0)
+					&& ((node.commRequestRcvd & (node.commRequestRcvd - 1)) == 0)) {
+					// __builtin_ctz(value) turns an eight-bit value with 1 bit set
+					// to its bit position value - eg, 00001000 becomes 3.
+					// It does this by counting trailing zeros (hence ctz)
+					device = __builtin_ctz(node.commRequestRcvd);
+					serial.write("<<");
+					serial.write(device);
+					serial.write(": ");
+					for (uint8_t i = 0; i < node.recvMsgBuf[0]; i++) {
+						serial.write(" ");
+						serial.write(node.recvMsgBuf[i]);
+					}
 					serial.writeln(" ");
+
 				} else {
-					serial.write(" err: "); serial.write(node.errMsg(err));
-					serial.write(" : "); serial.write(SB_DATPORT.DIR);
-					serial.write(" : "); serial.writeln(SB_DATPORT.IN);
+					// multiple trigger error
 				}
+			} else {
+				//serial.writeln(err);
 			}
 
 			// When done...
