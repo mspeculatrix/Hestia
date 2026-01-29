@@ -19,6 +19,7 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <SB_nodelib_ng.h>
+#include <SB_servolib_t1604.h>
 #include <smd_ng_serial.h>
 #include "lib/app_defines.h"
 
@@ -63,7 +64,8 @@ int main(void) {
 	uint32_t debug_count = 0;
 	node.sendMsgBuf[0] = 4;			// DUMMY DATA - for testing
 	node.sendMsgBuf[1] = SBMSG_SET_PARAM;
-	node.sendMsgBuf[2] = 0;
+	node.sendMsgBuf[2] = SB_Servo::SB_SERVO_A;
+	node.sendMsgBuf[4] = SB_Servo::SB_SERVO_B;
 	// uint8_t angle = 90;
 	uint8_t angleIdx = 0;
 	const uint8_t numAngles = 5;
@@ -73,14 +75,14 @@ int main(void) {
 
 		// DUMMY ROUTINE - for testing the send functionality
 		debug_count++;
-		if (debug_count == 0x005F0000) {
-			debug_count = 0;
+		if (debug_count == 0x002F0000) {
 			cli();
-			// node.sendMsgBuf[2] = static_cast<uint8_t>(rand() % 180);
+			serial.write(">> "); node.printBuf(node.sendMsgBuf);
+			debug_count = 0;
 			node.sendMsgBuf[3] = angles[angleIdx];
 			angleIdx++;
 			if (angleIdx == numAngles) angleIdx = 0;
-			serial.write(">> "); node.printBuf(node.sendMsgBuf);
+			node.sendMsgBuf[5] = static_cast<uint8_t>(rand() % 90);
 			err_code err = node.sendMessage(MOD_SERVO);
 			if (err > 0) {
 				serial.writeln(node.errMsg(err));

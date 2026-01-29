@@ -2,6 +2,17 @@
 
  ATtiny1604 firmware code for a servo control board with a SensorBus interface.
 
+ SensorBus messages should have the following format:
+
+ | Byte | Value                   |
+ |:----:|-------------------------|
+ | 0    | 6                       |
+ | 1    | SBMSG_SET_PARAM         |
+ | 2    | SB_Servo::SB_SERVO_A    |
+ | 3    | Angle for Servo A 0-180 |
+ | 2    | SB_Servo::SB_SERVO_B    |
+ | 3    | Angle for Servo B 0-180 |
+
  */
 
 #ifndef __AVR_ATtiny1604__
@@ -74,7 +85,8 @@ int main(void) {
 				serial.write("<< ");
 				switch (servo.recvMsgBuf[1]) {
 					case SBMSG_SET_PARAM:
-						servo.setAngle(SB_Servo::SB_SERVO_A, servo.recvMsgBuf[2]);
+						servo.setAngle(servo.recvMsgBuf[2], servo.recvMsgBuf[3]);
+						servo.setAngle(servo.recvMsgBuf[4], servo.recvMsgBuf[5]);
 						break;
 				}
 				servo.printMsg(servo.recvMsgBuf);
