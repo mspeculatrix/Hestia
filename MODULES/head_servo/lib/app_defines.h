@@ -22,9 +22,9 @@
 #define SB_DAT_CTRL		PIN1CTRL
 #define SB_DAT_ISR_VEC 	PORTA_PORT_vect
 
-#define SERVO_A_MIN   313
-#define SERVO_A_MAX   625
-#define SERVO_B_MIN   313
-#define SERVO_B_MAX   625
+#define PAN_SERVO_MIN   170
+#define PAN_SERVO_MAX   745
+#define TILT_SERVO_MIN  350
+#define TILT_SERVO_MAX  625
 
 #endif

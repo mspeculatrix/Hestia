@@ -11,6 +11,5 @@
 #define RX_PIN PIN1_bm
 #define MSG_BUF_LEN 16
 
-// The following define to which pins modules are connected
-#define MOD_0  PIN0_bm
-#define MOD_1 PIN1_bm
+// The following define to which DAT pins SB modules are connected
+#define MOD_SERVO PIN1_bm

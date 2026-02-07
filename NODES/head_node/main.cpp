@@ -1,7 +1,8 @@
 /*
- * SB_Node_dev
+ * head_node
  *
- * ATmega4809 firmware code for a generic SensorBus node. Use as a template.
+ * Firmware for Hestia's head control node.
+ *
  */
 
 #ifndef __AVR_ATmega4809__
@@ -45,6 +46,36 @@ ISR(SB_DAT_ISR_VEC) {
 *****     FUNCTIONS                                                        *****
 *******************************************************************************/
 
+// Uses XORing to get a random number state. Faster than using libc rand()
+uint8_t get_rng_state(void) {
+	static uint8_t rng_state = 42;  // Arbitrary nonzero start
+	rng_state ^= (rng_state << 3);
+	rng_state ^= (rng_state >> 5);
+	rng_state ^= (rng_state << 7);
+	return rng_state;
+}
+
+// Get random unsigned int in range 0-180
+uint8_t get_random_unsigned_180(void) {
+	uint8_t rng_state = get_rng_state();
+	return (rng_state * 180u) >> 8;  // Scale 0-255 → 0-179
+}
+
+// Get random signed int -128 to 127
+int8_t get_random_signed_180(void) {
+	uint8_t rng_state = get_rng_state();
+	return (int8_t)rng_state;  // 0-255 → -128 to 127 (sign-extended)
+}
+
+// Scale an unsigned number in range 0-90 to 0-180
+int8_t scale_unsigned_90_to_180(uint8_t input) {
+	return (input * 2u);
+}
+
+// Scale a signed number in range -45 - 45 to unsigned 0-180
+uint8_t scale_signed_90_to_180(int8_t input) {
+	return ((uint16_t)(input + 45) * 2u);
+}
 
 
 /*******************************************************************************
@@ -60,26 +91,43 @@ int main(void) {
 	CLKCTRL.MCLKCTRLB = 0;		// No prescaling, full main clock frequency
 
 	serial.begin();
-	serial.writeln("Node active");
+	serial.writeln("Head node active");
 
 	sei();						// Enable interrupts
 	/***************************************************************************
 	****** MAIN LOOP                                                       *****
 	***************************************************************************/
 
+	uint32_t debug_count = 0;
+	node.sendMsgBuf[0] = 6;			// DUMMY DATA - for testing
+	node.sendMsgBuf[1] = SBMSG_SET_PARAM;
+	node.sendMsgBuf[2] = SB_Servo::SB_SERVO_A; // Pan servo
+	node.sendMsgBuf[4] = SB_Servo::SB_SERVO_B; // Tilt servo
+	// uint8_t angle = 90;
+	// uint8_t angleIdx = 0;
+	// const uint8_t numAngles = 5;
+	// uint8_t angles[] = { 0, 45, 90, 135, 180 };
+
 	while (1) {
 
-		// SEND MESSAGE
-		// Condition for sending message
-		// cli();
-		// Load relevant values into node.sendMsgBuf
-		// err_code err = node.sendMessage(MOD_0);
-		// Deal with any errors
-		// Finally...
-		// SB_DATPORT.INTFLAGS = 0xFF;
-		// sei();
+		debug_count++;
+		if (debug_count == 0x002F0000) {
+			cli();
+			debug_count = 0;
+			node.sendMsgBuf[3] = 90;
+			// node.sendMsgBuf[3] = angles[angleIdx];
+			// if (angleIdx == numAngles) angleIdx = 0;
+			node.sendMsgBuf[3] = get_random_unsigned_180();
+			node.sendMsgBuf[5] = get_random_unsigned_180();
+			serial.write(">> "); node.printMsg(node.sendMsgBuf);
+			err_code err = node.sendMessage(MOD_SERVO);
+			serial.writeln(node.errMsg(err));
+			// angleIdx++;
+			SB_DATPORT.INTFLAGS = 0xFF;
+			sei();
+		}
 
-		// DEAL WITH RECEIVED MESSAGE
+
 		if (node.commRequestRcvd >= 0) {
 			// A module is requesting comms
 			cli();	// Disable interrupts while dealing with this.

@@ -1,18 +1,6 @@
-/* SB_Mod_servo_dev
+/* HEAD_SERVO
 
- ATtiny1604 firmware code for a servo control board with a SensorBus interface.
- Use as a template.
-
- SensorBus messages should have the following format:
-
- | Byte | Value                     |
- |:----:|---------------------------|
- | 0    | 6                         |
- | 1    | SBMSG_SET_PARAM           |
- | 2    | SB_Servo::SB_SERVO_A      |
- | 3    | Angle for Servo A - 0-180 |
- | 2    | SB_Servo::SB_SERVO_B      |
- | 3    | Angle for Servo B - 0-180 |
+Firmware for a servo control module for the Hestia sensor head.
 
  */
 
@@ -43,7 +31,7 @@ SMD_NG_Serial serial = SMD_NG_Serial(SERIAL_BAUDRATE,
 	&PORTB, TX_PIN, RX_PIN);
 
 SB_Servo::SB_Servo_t1604 servo = SB_Servo::SB_Servo_t1604(
-	SERVO_A_MIN, SERVO_A_MAX, SERVO_B_MIN, SERVO_B_MAX,
+	PAN_SERVO_MIN, PAN_SERVO_MAX, TILT_SERVO_MIN, TILT_SERVO_MAX,
 	&SB_PORT, SB_CLK, SB_ACT, SB_DAT, &SB_DATPORT, &SB_DATPORT.SB_DAT_CTRL);
 
 /* **** ISRs ***** */
@@ -68,16 +56,11 @@ int main(void) {
 	serial.begin();
 	servo.begin();
 
-	serial.writeln("SB_Mod_servo_dev running");	// Just for dev/debugging
+	serial.writeln("head_servo running");	// Just for dev/debugging
 
 	/***************************************************************************
 	****** MAIN LOOP                                                       *****
 	***************************************************************************/
-
-	uint32_t debug_count = 0;
-	servo.sendMsgBuf[0] = 3;			// DUMMY DATA - for testing
-	servo.sendMsgBuf[1] = 0x55;
-	servo.sendMsgBuf[2] = 0xAA;
 
 	while (1) {
 		if (servo.commRequestRcvd >= 0) {
@@ -109,5 +92,6 @@ int main(void) {
 		// Finally...
 		// SB_DATPORT.INTFLAGS = 0xFF;
 		// sei();
+
 	}
 }
