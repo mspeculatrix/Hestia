@@ -5,22 +5,7 @@
 
 #include <avr/io.h>
 
-#define SERIAL_BAUDRATE 57600
-#define TX_PIN PIN2_bm
-#define RX_PIN PIN3_bm
-
-#define LED_PORT PORTA
-#define LEDA_PIN  PIN4_bm
-#define LEDB_PIN  PIN7_bm
-
-// SensorBus ports, pins, ISR vector
-#define SB_PORT 		PORTA
-#define SB_CLK  		PIN3_bm
-#define SB_ACT  		PIN2_bm
-#define SB_DATPORT 		PORTA
-#define SB_DAT  		PIN1_bm
-#define SB_DAT_CTRL		PIN1CTRL
-#define SB_DAT_ISR_VEC 	PORTA_PORT_vect
+// #define SERIAL_BAUDRATE 57600
 
 #define PAN_SERVO_MIN   170
 #define PAN_SERVO_MAX   745

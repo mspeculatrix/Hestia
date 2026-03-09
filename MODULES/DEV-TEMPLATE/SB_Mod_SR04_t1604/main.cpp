@@ -110,7 +110,7 @@ int main(void) {
 			SensorBus::err_code err = sr04.recvMessage(SB_DAT);
 			serial.write("<< ");
 			if (err == ERR_NONE) {
-				sr04.printMsg(sr04.recvMsgBuf);
+				//sr04.printMsg(sr04.recvMsgBuf);
 			} else {
 				serial.writeln(sr04.errMsg(err));
 			}

@@ -48,7 +48,7 @@ ISR(SB_DAT_ISR_VEC) {
 
 // Uses XORing to get a random number state. Faster than using libc rand()
 uint8_t get_rng_state(void) {
-	static uint8_t rng_state = 42;  // Arbitrary nonzero start
+	static uint8_t rng_state = 42;  // Arbitrary non-zero start
 	rng_state ^= (rng_state << 3);
 	rng_state ^= (rng_state >> 5);
 	rng_state ^= (rng_state << 7);
@@ -77,6 +77,13 @@ uint8_t scale_signed_90_to_180(int8_t input) {
 	return ((uint16_t)(input + 45) * 2u);
 }
 
+void printMsg(uint8_t* buf) {
+	serial.write(">> ");
+	for (uint8_t i = 0; i < buf[0]; i++) {
+		serial.write(buf[i]);
+		serial.write(" ");
+	}
+}
 
 /*******************************************************************************
 ***** MAIN                                                                 *****
@@ -99,35 +106,26 @@ int main(void) {
 	***************************************************************************/
 
 	uint32_t debug_count = 0;
-	node.sendMsgBuf[0] = 6;			// DUMMY DATA - for testing
+	node.sendMsgBuf[0] = 4;			// DUMMY DATA - for testing
 	node.sendMsgBuf[1] = SBMSG_SET_PARAM;
-	node.sendMsgBuf[2] = SB_Servo::SB_SERVO_A; // Pan servo
-	node.sendMsgBuf[4] = SB_Servo::SB_SERVO_B; // Tilt servo
-	// uint8_t angle = 90;
-	// uint8_t angleIdx = 0;
-	// const uint8_t numAngles = 5;
-	// uint8_t angles[] = { 0, 45, 90, 135, 180 };
 
 	while (1) {
 
+		// Send random instructions to servos
 		debug_count++;
 		if (debug_count == 0x002F0000) {
 			cli();
 			debug_count = 0;
-			node.sendMsgBuf[3] = 90;
-			// node.sendMsgBuf[3] = angles[angleIdx];
-			// if (angleIdx == numAngles) angleIdx = 0;
+			node.sendMsgBuf[2] = get_random_unsigned_180();
 			node.sendMsgBuf[3] = get_random_unsigned_180();
-			node.sendMsgBuf[5] = get_random_unsigned_180();
-			serial.write(">> "); node.printMsg(node.sendMsgBuf);
+			printMsg(node.sendMsgBuf);
 			err_code err = node.sendMessage(MOD_SERVO);
 			serial.writeln(node.errMsg(err));
-			// angleIdx++;
 			SB_DATPORT.INTFLAGS = 0xFF;
 			sei();
 		}
 
-
+		// INCOMING MESSAGES FROM MODULES
 		if (node.commRequestRcvd >= 0) {
 			// A module is requesting comms
 			cli();	// Disable interrupts while dealing with this.
@@ -153,7 +151,6 @@ int main(void) {
 						serial.write(node.recvMsgBuf[i]);
 					}
 					serial.writeln(" ");
-
 				} else {
 					// multiple trigger error
 				}

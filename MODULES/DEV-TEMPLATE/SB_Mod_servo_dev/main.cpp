@@ -91,7 +91,7 @@ int main(void) {
 						servo.setAngle(servo.recvMsgBuf[4], servo.recvMsgBuf[5]);
 						break;
 				}
-				servo.printMsg(servo.recvMsgBuf);
+				// servo.printMsg(servo.recvMsgBuf);
 			} else {
 				serial.writeln(servo.errMsg(err));
 			}

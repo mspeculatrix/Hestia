@@ -4,7 +4,7 @@ environments:
 
     tool:
       name: 'serialupdi'
-      # 'atmel_ice'
+      # name: 'atmel_ice'
       # name: 'snap'
 
     target:
