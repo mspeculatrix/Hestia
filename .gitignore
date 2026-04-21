@@ -4,6 +4,8 @@
 *.d
 *.map
 
+Drivers
+
 .vscode
 .DS_Store
 fp-info-cache
