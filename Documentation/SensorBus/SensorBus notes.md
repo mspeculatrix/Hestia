@@ -40,11 +40,11 @@ Messages consist of bytes:
 
 By default, and when idle, all pins on both Node and Module are set as Inputs, so that they are effectively high-Z. There are pull-ups on all lines at the Node end.
 
-| LABEL    | SIGNAL     | NOTE           |
-|:--------:|:----------:|:--------------:|
-| `SB_ACT` | Bus Active | Shared         |
-| `SB_CLK` | Clock      | Shared         |
-| `DAT`    | Data       | Dedicated, int |
+| LABEL    | SIGNAL     | CONTROLLED BY | NOTE           |
+|:--------:|:----------:|:-------------:|:--------------:|
+| `SB_ACT` | Bus Active | Sender        | Shared         |
+| `SB_CLK` | Clock      | Sender        | Shared         |
+| `DAT`    | Data       | Alternates    | Dedicated, int |
 
 The DAT pins (at both ends) have interrupts enabled on falling edges.
 
@@ -82,6 +82,5 @@ The function names refer to the functions in my C++ library `SB_devicelib_ng` fo
 | Release `DAT` to INPUT            |                                |
 | - SETTLE_DELAY -                  | - SETTLE_DELAY -               |
 | <-- reset to defaults -->         | <-- reset to defaults -->      |
-|                                   |                                |
 |                                   | Clear `DAT` port INTFLAGS      |
 | sei()                             | sei()                          |

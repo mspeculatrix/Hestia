@@ -13,13 +13,15 @@ TARGET = SB_Node_dev
 # and ~/avrlib/avr-c++
 
 # HEADER-ONLY LIBRARIES - list all header-only dependencies
-AVRLIB_HDRS = SB_lib_defines.h \
-	smd_std_macros.h
+AVRLIB_HDRS = smd_std_macros.h
 
 # CUSTOM LIBRARY IMPLEMENTATIONS - list all custom libraries (.cpp files)
 AVRLIB_SRCS = SB_devicelib_ng.cpp \
 	SB_nodelib_ng.cpp \
 	smd_ng_serial.cpp
+
+# COMMON MCU LIBRARIES - list all header-only dependencies
+MCULIB_HDRS = SB_lib_defines.h
 
 # ----- Programmer Settings - select one set -----------------------------------
 
@@ -38,6 +40,7 @@ PROGRAMMER_ARGS = -P usb -B 125kHz
 # Library Paths
 LIBCOMMON = $(HOME)/avrlib/avr-common
 LIBCPP    = $(HOME)/avrlib/avr-c++
+LIBMCU    = $(HOME)/mculib
 
 # Local project files
 LOCAL_SRCS = $(wildcard *.cpp) $(wildcard lib/*.cpp)
@@ -47,7 +50,7 @@ CPPSOURCES = $(LOCAL_SRCS) $(AVRLIB_SRCS)
 OBJECTS    = $(addsuffix .o, $(basename $(notdir $(CPPSOURCES))))
 
 # Tell Make where to look for source files
-VPATH = $(LIBCOMMON):$(LIBCPP):lib
+VPATH = $(LIBCOMMON):$(LIBCPP):$(LIBMCU):lib
 
 # Tools
 CXX      = avr-g++
@@ -57,7 +60,7 @@ AVRSIZE  = avr-size
 AVRDUDE  = avrdude
 
 # Compiler flags
-CPPFLAGS = -Os -DF_CPU=$(F_CPU) -I. -Ilib -I$(LIBCOMMON) -I$(LIBCPP)
+CPPFLAGS = -Os -DF_CPU=$(F_CPU) -I. -Ilib -I$(LIBCOMMON) -I$(LIBCPP) -I$(LIBMCU)
 CPPFLAGS += -Wall -funsigned-char -funsigned-bitfields -fpack-struct
 CPPFLAGS += -fshort-enums -ffunction-sections -fdata-sections -MMD -MP
 
