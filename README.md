@@ -1,6 +1,8 @@
 # HESTIA
 
-Home robot project. A work in progress.
+A home robot project with the emphasis on sensors. The idea is that Hestia will autonomously patrol the home, keeping an eye on things. But it's really a way of playing with sensors.
+
+This is a work in (slow) progress.
 
 Hestia uses a distributed computing architecture. This consists of:
 
@@ -24,3 +26,12 @@ No specific Nodes have been designed so far. I've using an ATmega4809-based dev 
 **dev**: This is where most of the work takes place. It always has the most up-to-date version of the project, but nothing is guaranteed to work. If you want to follow the project, this is where you should hang out.
 
 **experimental**: For just trying stuff out, particularly stuff that I think is likely to fail. Anything in this branch should be considered temporary at best.
+
+## OTHER REPOS FOR THIS PROJECT
+
+- [Hestia Webserver](https://github.com/mspeculatrix/Hestia_Webserver) - a command and control server designed to be run off-robot.
+- [Hestia Pico WS Server](https://github.com/mspeculatrix/Hestia_Pico_WS_Server) - a WebSocket server on the Raspberry Pi Pico 2W. Will provide an on-robot communications hub.
+
+## SUPPORT THIS PROJECT
+
+If you find this project in any way interesting or useful, you could consider [buying me a coffee](https://ko-fi.com/zolachrome).
