@@ -2,7 +2,7 @@
 
 A home robot project with the emphasis on sensors. The idea is that Hestia will autonomously patrol the home, keeping an eye on things. But it's really a way of playing with sensors.
 
-This is a work in (slow) progress.
+**BEWARE**: This is a work in (slow) progress. There are many parts of this repo that are incomplete and disfunctional.
 
 Hestia uses a distributed computing architecture. This consists of:
 
