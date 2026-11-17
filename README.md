@@ -2,7 +2,15 @@
 
 A home robot project with the emphasis on sensors. The idea is that Hestia will autonomously patrol the home, keeping an eye on things. But it's really a way of playing with sensors.
 
+I'm writing about this project in a series of articles for the Machina Speculatrix publication on Medium. The [Hestia home page](https://medium.com/machina-speculatrix/hestia-the-observant-robot-an-introduction-4c6f7eecf5d9) is open access although the articles themselves require a Medium subscription.
+
 **BEWARE**: This is a work in (slow) progress. There are many parts of this repo that are incomplete and disfunctional.
+
+## HARDWARE
+
+The main chassis is a DOIT T300 tank kit. But most of the motion-related software would be usable with any two-motor design. The two 9V brushed motors are driven by an off-the-shelf dual H-bridge board based around the L298 controller IC.
+
+## COMPUTE
 
 Hestia uses a distributed computing architecture. This consists of:
 
@@ -12,7 +20,7 @@ Hestia uses a distributed computing architecture. This consists of:
 
 ## CURRENT NODES
 
-No specific Nodes have been designed so far. I've using an ATmega4809-based dev board for experimenting.
+So far we just have the motor controller board based on an RPi Pico. This has [its own repository](https://github.com/mspeculatrix/Hestia_Pico_Motor_Controller/tree/main).
 
 ## CURRENT MODULES
 
@@ -30,7 +38,7 @@ No specific Nodes have been designed so far. I've using an ATmega4809-based dev 
 ## OTHER REPOS FOR THIS PROJECT
 
 - [Hestia Webserver](https://github.com/mspeculatrix/Hestia_Webserver) - a command and control server designed to be run off-robot.
-- [Hestia Pico WS Server](https://github.com/mspeculatrix/Hestia_Pico_WS_Server) - a WebSocket server on the Raspberry Pi Pico 2W. Will provide an on-robot communications hub.
+- [Hestia Pico Motor Controller](https://github.com/mspeculatrix/Hestia_Pico_Motor_Controller/tree/main) - an RPi Pico-based dual motor controller with serial and WebSocket interfaces.
 
 ## SUPPORT THIS PROJECT
 
