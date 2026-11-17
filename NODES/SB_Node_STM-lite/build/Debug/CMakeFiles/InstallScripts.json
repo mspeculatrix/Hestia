@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/smd/NasSync/DEV/PROJECTS/HESTIA/HESTIA_PROJECT/NODES/SB_Node_STM-lite/build/Debug/cmake_install.cmake",
+		"/Users/smd/NasSync/DEV/PROJECTS/HESTIA/HESTIA_PROJECT/NODES/SB_Node_STM-lite/build/Debug/cmake/stm32cubemx/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

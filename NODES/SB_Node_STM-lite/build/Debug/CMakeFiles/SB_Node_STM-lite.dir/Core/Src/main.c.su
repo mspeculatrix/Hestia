@@ -1,0 +1,6 @@
+/Users/smd/NasSync/DEV/PROJECTS/HESTIA/HESTIA_PROJECT/NODES/SB_Node_STM-lite/Core/Src/main.c:66:5:main	8	static
+/Users/smd/NasSync/DEV/PROJECTS/HESTIA/HESTIA_PROJECT/NODES/SB_Node_STM-lite/Core/Src/main.c:114:6:SystemClock_Config	120	static
+/Users/smd/NasSync/DEV/PROJECTS/HESTIA/HESTIA_PROJECT/NODES/SB_Node_STM-lite/Core/Src/main.c:172:13:MX_ICACHE_Init	8	static
+/Users/smd/NasSync/DEV/PROJECTS/HESTIA/HESTIA_PROJECT/NODES/SB_Node_STM-lite/Core/Src/main.c:204:13:MX_GPIO_Init	48	static
+/Users/smd/NasSync/DEV/PROJECTS/HESTIA/HESTIA_PROJECT/NODES/SB_Node_STM-lite/Core/Src/main.c:291:6:MPU_Config	32	static
+/Users/smd/NasSync/DEV/PROJECTS/HESTIA/HESTIA_PROJECT/NODES/SB_Node_STM-lite/Core/Src/main.c:327:6:Error_Handler	4	static,ignoring_inline_asm

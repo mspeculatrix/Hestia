@@ -1,0 +1,22 @@
+# ninja log v7
+3	91	1793300700535278062	CMakeFiles/SB_Node_STM-lite.dir/startup_stm32h523xx.s.obj	af2199f09054150
+2	159	1793300700534898152	CMakeFiles/SB_Node_STM-lite.dir/Core/Src/sysmem.c.obj	24bfedd28bdaa8af
+3	166	1793300700535093690	CMakeFiles/SB_Node_STM-lite.dir/Core/Src/syscalls.c.obj	f46451394ffbf30e
+2	282	1793300700534718488	CMakeFiles/SB_Node_STM-lite.dir/Core/Src/stm32h5xx_hal_msp.c.obj	28cf35174c9bc72a
+3	304	1793300700535457809	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Core/Src/system_stm32h5xx.c.obj	e5e3e20f9d48f75a
+3	349	1793300700535985467	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32H5xx_HAL_Driver/Src/stm32h5xx_hal_cortex.c.obj	5fecbd14197de04e
+2	371	1793300700534238871	CMakeFiles/SB_Node_STM-lite.dir/Core/Src/main.c.obj	9917fb1d6439321c
+4	418	1793300700536854410	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32H5xx_HAL_Driver/Src/stm32h5xx_hal_icache.c.obj	a660640a8081bfb4
+159	425	1793300700691519985	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32H5xx_HAL_Driver/Src/stm32h5xx_hal_flash.c.obj	3e2441075716a0cb
+2	446	1793300700534519241	CMakeFiles/SB_Node_STM-lite.dir/Core/Src/stm32h5xx_it.c.obj	e385120002a37cad
+5	463	1793300700537246362	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32H5xx_HAL_Driver/Src/stm32h5xx_hal_rcc.c.obj	834d009c14909a24
+282	599	1793300700814443975	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32H5xx_HAL_Driver/Src/stm32h5xx_hal_gpio.c.obj	49f850d364b71b6f
+371	623	1793300700903946493	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32H5xx_HAL_Driver/Src/stm32h5xx_hal_pwr.c.obj	810fe080253ccef3
+167	635	1793300700699260020	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32H5xx_HAL_Driver/Src/stm32h5xx_hal_flash_ex.c.obj	921839ea1fb4eb17
+418	642	1793300700950822279	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32H5xx_HAL_Driver/Src/stm32h5xx_hal_pwr_ex.c.obj	b2c58a07289e226a
+304	660	1793300700836691222	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32H5xx_HAL_Driver/Src/stm32h5xx_hal_dma.c.obj	cd79379f6747f228
+425	664	1793300700957870617	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32H5xx_HAL_Driver/Src/stm32h5xx_hal.c.obj	72f50547eedd1577
+92	672	1793300700624266380	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32H5xx_HAL_Driver/Src/stm32h5xx_hal_rcc_ex.c.obj	2954ba6861d44b08
+446	676	1793300700978334852	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32H5xx_HAL_Driver/Src/stm32h5xx_hal_exti.c.obj	6f0b66340afe2f8b
+349	712	1793300700881374586	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32H5xx_HAL_Driver/Src/stm32h5xx_hal_dma_ex.c.obj	3c6e97a13b2986f3
+712	772	1793300701244897642	SB_Node_STM-lite.elf	72c51597c0bacb0c
